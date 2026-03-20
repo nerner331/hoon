@@ -1,0 +1,3 @@
+username: hoon-admin
+password: HoonStoreAdmin!2026#37
+ADMIN_PANEL_PATH=/hoon-admin-93x7-secure-portal

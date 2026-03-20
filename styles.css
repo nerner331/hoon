@@ -1545,6 +1545,37 @@ main {
   gap: 10px;
 }
 
+.camera-upload-actions,
+.camera-capture-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.camera-capture-panel {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.camera-stream {
+  display: block;
+  width: 100%;
+  min-height: 240px;
+  max-height: 420px;
+  object-fit: cover;
+  border-radius: 20px;
+  background: #050705;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.camera-canvas {
+  display: none;
+}
+
 .image-preview {
   display: grid;
   place-items: center;
@@ -1857,6 +1888,8 @@ main {
   .search-box button,
   .auth-tab,
   .product-footer a,
+  .camera-upload-actions button,
+  .camera-capture-actions button,
   .ghost-button,
   .secondary-button,
   .primary-nav-button,

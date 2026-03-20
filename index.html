@@ -301,12 +301,12 @@
         <div class="sell-copy">
           <p class="section-tag">نشر إعلان جديد</p>
           <h2>أضف إعلانك للبيع</h2>
-          <p>أدخل تفاصيل المنتج والسعر والمدينة، ثم أرفق صورة واضحة ليظهر إعلانك أمام المشترين.</p>
+          <p>أدخل تفاصيل المنتج والسعر والمدينة، ثم التقط صورة مباشرة وواضحة للمنتج قبل إرسال الإعلان للمراجعة.</p>
           <ul class="sell-points">
             <li>اكتب وصفًا مختصرًا يوضح حالة المنتج.</li>
-            <li>أضف صورة رئيسية واضحة تزيد من فرص البيع.</li>
+            <li>التقط صورة مباشرة وواضحة بالكاميرا، فالصور المخالفة أو غير الحقيقية قد تُرفض.</li>
             <li>حدّد السعر بالليرة السورية والمدينة بدقة.</li>
-            <li>يمكنك طلب تمييز الإعلان لزيادة الظهور.</li>
+            <li>لن يظهر الإعلان قبل مراجعة الإدارة للصورة واعتمادها.</li>
           </ul>
         </div>
 
@@ -340,13 +340,24 @@
           </label>
           <label>
             صورة رئيسية للإعلان
-            <input id="imageInput" name="image" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp">
+            <div class="camera-upload-actions">
+              <button id="openListingCameraButton" class="secondary-button" type="button">فتح الكاميرا</button>
+              <button id="clearListingImageButton" class="ghost-button hidden" type="button">حذف الصورة</button>
+            </div>
           </label>
+          <div id="listingCameraPanel" class="camera-capture-panel hidden">
+            <video id="listingCameraVideo" class="camera-stream" autoplay playsinline muted></video>
+            <div class="camera-capture-actions">
+              <button id="captureListingCameraButton" class="primary-button" type="button">التقاط الصورة الآن</button>
+              <button id="cancelListingCameraButton" class="ghost-button" type="button">إغلاق الكاميرا</button>
+            </div>
+            <canvas id="listingCameraCanvas" class="camera-canvas hidden"></canvas>
+          </div>
           <div class="image-preview-shell">
             <div id="imagePreview" class="image-preview placeholder">
-              <span>ستظهر معاينة الصورة هنا بعد الاختيار</span>
+              <span>ستظهر معاينة الصورة هنا بعد الالتقاط المباشر</span>
             </div>
-            <p class="upload-hint">الصيغ المدعومة: JPG وPNG وWEBP بحد أقصى 5 ميغابايت.</p>
+            <p id="imagePolicyNote" class="upload-hint">يلزم التقاط صورة مباشرة وواضحة للمنتج. تراجع الإدارة الصورة قبل اعتماد الإعلان للتأكد من أنها حقيقية وغير مخالفة.</p>
           </div>
           <label class="checkbox-row">
             <input name="isFeatured" type="checkbox">

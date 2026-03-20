@@ -1,5 +1,13 @@
 const SESSION_STORAGE_KEY = "souq-syria-session";
 const LEGACY_MEMBER_TOKEN_KEY = "souq-syria-token";
+const MAX_LISTING_IMAGE_BYTES = 5 * 1024 * 1024;
+const ALLOWED_LISTING_IMAGE_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+]);
+const LISTING_PREVIEW_PLACEHOLDER = "ستظهر معاينة الصورة هنا بعد الالتقاط المباشر";
+const LISTING_CAMERA_UNAVAILABLE_MESSAGE = "يتطلب نشر الإعلان متصفحًا يدعم التقاط صورة مباشرة من الكاميرا.";
 
 const storedSession = getStoredSession();
 
@@ -26,6 +34,11 @@ const previewUrls = {
   live: "",
 };
 
+const listingCameraState = {
+  stream: null,
+  file: null,
+};
+
 const membersCountElement = document.querySelector("#membersCount");
 const listingsCountElement = document.querySelector("#listingsCount");
 const featuredCountElement = document.querySelector("#featuredCount");
@@ -43,12 +56,19 @@ const loginForm = document.querySelector("#loginForm");
 const courierLoginForm = document.querySelector("#courierLoginForm");
 const listingForm = document.querySelector("#listingForm");
 const courierForm = document.querySelector("#courierForm");
-const imageInput = document.querySelector("#imageInput");
 const identityImageInput = document.querySelector("#identityImageInput");
 const livePhotoInput = document.querySelector("#livePhotoInput");
 const imagePreview = document.querySelector("#imagePreview");
 const identityPreview = document.querySelector("#identityPreview");
 const livePhotoPreview = document.querySelector("#livePhotoPreview");
+const openListingCameraButton = document.querySelector("#openListingCameraButton");
+const captureListingCameraButton = document.querySelector("#captureListingCameraButton");
+const cancelListingCameraButton = document.querySelector("#cancelListingCameraButton");
+const clearListingImageButton = document.querySelector("#clearListingImageButton");
+const listingCameraPanel = document.querySelector("#listingCameraPanel");
+const listingCameraVideo = document.querySelector("#listingCameraVideo");
+const listingCameraCanvas = document.querySelector("#listingCameraCanvas");
+const imagePolicyNote = document.querySelector("#imagePolicyNote");
 const authShell = document.querySelector(".auth-shell");
 const accountSummaryTitle = document.querySelector("#accountSummaryTitle");
 const accountSummaryNote = document.querySelector("#accountSummaryNote");
@@ -76,6 +96,7 @@ bootstrap();
 
 async function bootstrap() {
   bindEvents();
+  initializeListingCameraControls();
   switchAuthPanel(state.currentAuthPanel);
   await loadAppData();
 }
@@ -136,10 +157,6 @@ function bindEvents() {
     await handleCourierApplication();
   });
 
-  imageInput.addEventListener("change", () => {
-    updateFilePreview(imageInput, imagePreview, "listing", "معاينة صورة الإعلان");
-  });
-
   identityImageInput.addEventListener("change", () => {
     updateFilePreview(identityImageInput, identityPreview, "identity", "صورة الهوية الشخصية");
   });
@@ -151,6 +168,211 @@ function bindEvents() {
   logoutButton.addEventListener("click", async () => {
     await handleLogout();
   });
+
+  openListingCameraButton.addEventListener("click", async () => {
+    await openListingCamera();
+  });
+
+  captureListingCameraButton.addEventListener("click", async () => {
+    await captureListingPhoto();
+  });
+
+  cancelListingCameraButton.addEventListener("click", () => {
+    closeListingCamera();
+  });
+
+  clearListingImageButton.addEventListener("click", () => {
+    clearListingImage();
+  });
+
+  window.addEventListener("beforeunload", () => {
+    stopListingCameraStream();
+  });
+}
+
+function initializeListingCameraControls() {
+  const supported = canUseListingCameraCapture();
+
+  openListingCameraButton.disabled = !supported;
+
+  if (supported) {
+    imagePolicyNote.textContent = "يلزم التقاط صورة مباشرة وواضحة للمنتج من الكاميرا. تراجع الإدارة الصورة قبل اعتماد الإعلان للتأكد من أنها حقيقية وغير مخالفة.";
+    return;
+  }
+
+  openListingCameraButton.textContent = "الكاميرا غير متاحة";
+  imagePolicyNote.textContent = "هذا المتصفح لا يدعم التقاط صورة مباشرة. استخدم هاتفًا أو متصفحًا يدعم الكاميرا لإرسال الإعلان.";
+}
+
+function canUseListingCameraCapture() {
+  return Boolean(
+    navigator.mediaDevices &&
+    typeof navigator.mediaDevices.getUserMedia === "function" &&
+    listingCameraVideo &&
+    listingCameraCanvas,
+  );
+}
+
+async function openListingCamera() {
+  if (!canUseListingCameraCapture()) {
+    listingMessage.textContent = LISTING_CAMERA_UNAVAILABLE_MESSAGE;
+    return;
+  }
+
+  try {
+    stopListingCameraStream();
+    listingCameraState.stream = await requestListingCameraStream();
+    listingCameraVideo.srcObject = listingCameraState.stream;
+    await listingCameraVideo.play().catch(() => {});
+    listingCameraPanel.classList.remove("hidden");
+    listingMessage.textContent = "وجّه الكاميرا نحو المنتج ثم اضغط على زر التقاط الصورة الآن.";
+  } catch (error) {
+    listingMessage.textContent = getListingCameraErrorMessage(error);
+  }
+}
+
+async function requestListingCameraStream() {
+  try {
+    return await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: { ideal: "environment" },
+      },
+      audio: false,
+    });
+  } catch (error) {
+    if (error && (error.name === "OverconstrainedError" || error.name === "NotFoundError")) {
+      return navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: false,
+      });
+    }
+
+    throw error;
+  }
+}
+
+async function captureListingPhoto() {
+  if (!listingCameraState.stream) {
+    listingMessage.textContent = "افتح الكاميرا أولًا ثم التقط صورة المنتج.";
+    return;
+  }
+
+  try {
+    const capturedFile = await createListingCameraFile();
+    const validationError = validateListingImageFile(capturedFile);
+
+    if (validationError) {
+      listingMessage.textContent = validationError;
+      return;
+    }
+
+    listingCameraState.file = capturedFile;
+    updatePreviewFromFile(capturedFile, imagePreview, "listing", "معاينة صورة الإعلان");
+    clearListingImageButton.classList.remove("hidden");
+    closeListingCamera();
+    listingMessage.textContent = "تم التقاط صورة المنتج مباشرة. يمكنك الآن إرسال الإعلان للمراجعة.";
+  } catch (error) {
+    listingMessage.textContent = error.message || "تعذر التقاط صورة المنتج الآن.";
+  }
+}
+
+async function createListingCameraFile() {
+  if (!listingCameraVideo.videoWidth || !listingCameraVideo.videoHeight) {
+    throw new Error("انتظر حتى تظهر صورة الكاميرا بوضوح ثم التقط الصورة.");
+  }
+
+  const { width, height } = getListingCaptureDimensions(listingCameraVideo);
+  const context = listingCameraCanvas.getContext("2d");
+
+  if (!context) {
+    throw new Error("تعذر تجهيز مساحة التقاط الصورة. حاول مرة أخرى.");
+  }
+
+  listingCameraCanvas.width = width;
+  listingCameraCanvas.height = height;
+  context.drawImage(listingCameraVideo, 0, 0, width, height);
+
+  const blob = await canvasToBlob(listingCameraCanvas, "image/jpeg", 0.88);
+
+  if (!blob) {
+    throw new Error("تعذر تجهيز الصورة الملتقطة. حاول مرة أخرى.");
+  }
+
+  return new File([blob], `listing-camera-${Date.now()}.jpg`, {
+    type: "image/jpeg",
+    lastModified: Date.now(),
+  });
+}
+
+function getListingCaptureDimensions(videoElement) {
+  const videoWidth = videoElement.videoWidth || 1280;
+  const videoHeight = videoElement.videoHeight || 960;
+  const maxSide = 1600;
+  const scale = Math.min(1, maxSide / Math.max(videoWidth, videoHeight));
+
+  return {
+    width: Math.max(1, Math.round(videoWidth * scale)),
+    height: Math.max(1, Math.round(videoHeight * scale)),
+  };
+}
+
+function canvasToBlob(canvasElement, type, quality) {
+  return new Promise((resolve) => {
+    canvasElement.toBlob(resolve, type, quality);
+  });
+}
+
+function closeListingCamera() {
+  stopListingCameraStream();
+  listingCameraPanel.classList.add("hidden");
+}
+
+function stopListingCameraStream() {
+  if (listingCameraState.stream) {
+    listingCameraState.stream.getTracks().forEach((track) => {
+      track.stop();
+    });
+    listingCameraState.stream = null;
+  }
+
+  if (listingCameraVideo.srcObject) {
+    listingCameraVideo.srcObject = null;
+  }
+}
+
+function clearListingImage() {
+  listingCameraState.file = null;
+  clearListingImageButton.classList.add("hidden");
+  resetFilePreview(imagePreview, "listing", LISTING_PREVIEW_PLACEHOLDER);
+  listingMessage.textContent = "تم حذف الصورة. التقط صورة مباشرة جديدة للمتابعة.";
+}
+
+function validateListingImageFile(file) {
+  if (!file) {
+    return "يجب التقاط صورة مباشرة للمنتج قبل إرسال الإعلان.";
+  }
+
+  if (!ALLOWED_LISTING_IMAGE_TYPES.has(file.type)) {
+    return "الصورة الملتقطة يجب أن تكون بصيغة JPG أو PNG أو WEBP.";
+  }
+
+  if (file.size > MAX_LISTING_IMAGE_BYTES) {
+    return "حجم الصورة كبير جدًا. التقط صورة أوضح بحجم لا يتجاوز 5 ميغابايت.";
+  }
+
+  return "";
+}
+
+function getListingCameraErrorMessage(error) {
+  if (error && (error.name === "NotAllowedError" || error.name === "SecurityError")) {
+    return "يجب السماح بالوصول إلى الكاميرا لالتقاط صورة المنتج.";
+  }
+
+  if (error && error.name === "NotFoundError") {
+    return "لم يتم العثور على كاميرا متاحة على هذا الجهاز.";
+  }
+
+  return "تعذر تشغيل الكاميرا الآن. جرّب مرة أخرى أو استخدم جهازًا يدعم التصوير المباشر.";
 }
 
 async function loadAppData() {
@@ -495,7 +717,21 @@ async function handleListingSubmit() {
     return;
   }
 
+  if (!canUseListingCameraCapture()) {
+    listingMessage.textContent = LISTING_CAMERA_UNAVAILABLE_MESSAGE;
+    return;
+  }
+
+  const imageValidationError = validateListingImageFile(listingCameraState.file);
+
+  if (imageValidationError) {
+    listingMessage.textContent = imageValidationError;
+    return;
+  }
+
   const formData = new FormData(listingForm);
+  formData.set("image", listingCameraState.file, listingCameraState.file.name);
+  formData.set("imageSourceType", "camera");
 
   try {
     const response = await apiRequest("/api/listings", {
@@ -505,7 +741,7 @@ async function handleListingSubmit() {
     });
 
     listingForm.reset();
-    resetFilePreview(imagePreview, "listing", "ستظهر معاينة الصورة هنا بعد الاختيار");
+    clearListingImage();
     listingMessage.textContent = response.message;
     await refreshDynamicData();
     document.querySelector("#listings").scrollIntoView({ behavior: "smooth" });
@@ -633,7 +869,7 @@ function renderMiniListings(listings, emptyText) {
   return listings.slice(0, 4).map((listing) => `
     <article class="mini-item">
       <p class="mini-item-title">${escapeHtml(listing.title)}</p>
-      <p class="mini-item-meta">${formatCurrency(listing.price)} | ${escapeHtml(listing.city)}</p>
+      <p class="mini-item-meta">${formatCurrency(listing.price)} | ${escapeHtml(listing.city)} | ${escapeHtml(listing.approvalStatusLabel || "Ù…Ø¹ØªÙ…Ø¯")}</p>
     </article>
   `).join("");
 }
@@ -686,6 +922,10 @@ function updateFilePreview(inputElement, previewElement, previewKey, altText) {
     return;
   }
 
+  updatePreviewFromFile(file, previewElement, previewKey, altText);
+}
+
+function updatePreviewFromFile(file, previewElement, previewKey, altText) {
   if (previewUrls[previewKey]) {
     URL.revokeObjectURL(previewUrls[previewKey]);
   }

@@ -12,6 +12,8 @@ const DATA_DIR = resolveAppPath(process.env.DATA_DIR, path.join(ROOT_DIR, "data"
 const DB_PATH = resolveAppPath(process.env.DB_PATH, path.join(DATA_DIR, "souq-syria.db"));
 const UPLOADS_DIR = resolveAppPath(process.env.UPLOADS_DIR, path.join(ROOT_DIR, "uploads"));
 const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
+const MIN_IMAGE_WIDTH = 320;
+const MIN_IMAGE_HEIGHT = 320;
 const DEFAULT_MAX_BODY_BYTES = MAX_IMAGE_SIZE_BYTES + 1024 * 512;
 const MAX_MULTIPART_BODY_BYTES = MAX_IMAGE_SIZE_BYTES * 3 + 1024 * 512;
 const NODE_ENV = normalizeNodeEnv(process.env.NODE_ENV);
@@ -102,6 +104,8 @@ db.exec(`
     city TEXT NOT NULL,
     category TEXT NOT NULL,
     description TEXT NOT NULL,
+    approval_status TEXT NOT NULL DEFAULT 'pending',
+    approved_at TEXT,
     is_featured INTEGER NOT NULL DEFAULT 0,
     admin_highlight INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -168,6 +172,7 @@ db.exec(`
 
 ensureListingImageColumn();
 ensureListingHighlightColumn();
+ensureListingApprovalColumns();
 ensureMemberModerationColumns();
 ensureAdminPermissionColumns();
 ensureAdminSessionColumns();
@@ -346,6 +351,33 @@ function ensureListingHighlightColumn() {
 
   if (!hasAdminHighlight) {
     db.exec("ALTER TABLE listings ADD COLUMN admin_highlight INTEGER NOT NULL DEFAULT 0");
+  }
+}
+
+function ensureListingApprovalColumns() {
+  const columns = db.prepare("PRAGMA table_info(listings)").all();
+  const hasApprovalStatus = columns.some((column) => column.name === "approval_status");
+  const hasApprovedAt = columns.some((column) => column.name === "approved_at");
+
+  if (!hasApprovalStatus) {
+    db.exec("ALTER TABLE listings ADD COLUMN approval_status TEXT NOT NULL DEFAULT 'pending'");
+    db.exec(`
+      UPDATE listings
+      SET approval_status = 'approved'
+      WHERE approval_status IS NULL OR approval_status = '' OR approval_status = 'pending'
+    `);
+  }
+
+  if (!hasApprovedAt) {
+    db.exec("ALTER TABLE listings ADD COLUMN approved_at TEXT");
+  }
+
+  if (!hasApprovalStatus || !hasApprovedAt) {
+    db.exec(`
+      UPDATE listings
+      SET approved_at = COALESCE(approved_at, created_at, CURRENT_TIMESTAMP)
+      WHERE approval_status = 'approved'
+    `);
   }
 }
 
@@ -1037,10 +1069,19 @@ async function handleApiRoutes(req, res, pathname) {
     const listingId = Number(adminListingHighlightMatch[1]);
     const body = await readJsonBody(req);
     const highlighted = isTruthy(body.highlighted) ? 1 : 0;
-    const listing = db.prepare("SELECT id FROM listings WHERE id = ?").get(listingId);
+    const listing = db.prepare(`
+      SELECT id, approval_status AS approvalStatus
+      FROM listings
+      WHERE id = ?
+    `).get(listingId);
 
     if (!listing) {
       sendJson(res, 404, { error: "الإعلان غير موجود." });
+      return;
+    }
+
+    if (highlighted && listing.approvalStatus !== "approved") {
+      sendJson(res, 400, { error: "اعتمد الإعلان أولًا قبل تمييزه بإطار ذهبي." });
       return;
     }
 
@@ -1048,6 +1089,60 @@ async function handleApiRoutes(req, res, pathname) {
 
     sendJson(res, 200, {
       message: highlighted ? "تم تمييز الإعلان بإطار ذهبي." : "تمت إزالة الإطار الذهبي عن الإعلان.",
+      listing: getAdminListingById(listingId, admin),
+      listings: getAdminListings(admin),
+      stats: getAdminStats(),
+    });
+    return;
+  }
+
+  const adminListingApprovalMatch = pathname.match(/^\/api\/admin\/listings\/(\d+)\/approve$/);
+
+  if (req.method === "POST" && adminListingApprovalMatch) {
+    const session = getAdminSession(req);
+
+    if (!session) {
+      sendJson(res, 401, { error: "ÙŠØ¬Ø¨ ØªØ³Ø¬ÙŠÙ„ Ø¯Ø®ÙˆÙ„ Ø§Ù„Ø¥Ø¯Ø§Ø±Ø© Ø£ÙˆÙ„Ù‹Ø§." });
+      return;
+    }
+
+    const admin = getPublicAdmin(session.adminId);
+
+    if (!admin || !(admin.canManageListings || admin.canManageAdmins)) {
+      sendJson(res, 403, { error: "Ù„ÙŠØ³ Ù„Ø¯ÙŠÙƒ ØµÙ„Ø§Ø­ÙŠØ© Ù„Ø§Ø¹ØªÙ…Ø§Ø¯ Ø§Ù„Ø¥Ø¹Ù„Ø§Ù†Ø§Øª." });
+      return;
+    }
+
+    const listingId = Number(adminListingApprovalMatch[1]);
+    const listing = db.prepare(`
+      SELECT id, approval_status AS approvalStatus
+      FROM listings
+      WHERE id = ?
+    `).get(listingId);
+
+    if (!listing) {
+      sendJson(res, 404, { error: "Ø§Ù„Ø¥Ø¹Ù„Ø§Ù† ØºÙŠØ± Ù…ÙˆØ¬ÙˆØ¯." });
+      return;
+    }
+
+    if (listing.approvalStatus === "approved") {
+      sendJson(res, 200, {
+        message: "Ø§Ù„Ø¥Ø¹Ù„Ø§Ù† Ù…Ø¹ØªÙ…Ø¯ Ù…Ø³Ø¨Ù‚Ù‹Ø§.",
+        listing: getAdminListingById(listingId, admin),
+        listings: getAdminListings(admin),
+        stats: getAdminStats(),
+      });
+      return;
+    }
+
+    db.prepare(`
+      UPDATE listings
+      SET approval_status = 'approved', approved_at = ?
+      WHERE id = ?
+    `).run(new Date().toISOString(), listingId);
+
+    sendJson(res, 200, {
+      message: "ØªÙ… Ø§Ø¹ØªÙ…Ø§Ø¯ Ø§Ù„Ø¥Ø¹Ù„Ø§Ù† ÙˆØ£ØµØ¨Ø­ Ø¸Ø§Ù‡Ø±Ù‹Ø§ Ù„Ù„Ø²ÙˆØ§Ø±.",
       listing: getAdminListingById(listingId, admin),
       listings: getAdminListings(admin),
       stats: getAdminStats(),
@@ -1197,10 +1292,26 @@ async function handleApiRoutes(req, res, pathname) {
       return;
     }
 
-    const listing = db.prepare("SELECT id, member_id AS memberId FROM listings WHERE id = ?").get(listingId);
+    const listing = db.prepare(`
+      SELECT
+        l.id,
+        l.member_id AS memberId,
+        l.approval_status AS approvalStatus,
+        m.is_banned AS sellerIsBanned
+      FROM listings l
+      INNER JOIN members m ON m.id = l.member_id
+      WHERE l.id = ?
+    `).get(listingId);
 
     if (!listing) {
       sendJson(res, 404, { error: "الإعلان غير موجود." });
+      return;
+    }
+
+    if (listing.approvalStatus !== "approved" || listing.sellerIsBanned) {
+      sendJson(res, 400, { error: "لا يمكن إضافة إعلان غير معتمد أو محجوب إلى المفضلة." });
+      return;
+      sendJson(res, 400, { error: "Ù„Ø§ ÙŠÙ…ÙƒÙ† Ø¥Ø¶Ø§ÙØ© Ø¥Ø¹Ù„Ø§Ù† ØºÙŠØ± Ù…Ø¹ØªÙ…Ø¯ Ø£Ùˆ Ù…Ø­Ø¬ÙˆØ¨ Ø¥Ù„Ù‰ Ø§Ù„Ù…ÙØ¶Ù„Ø©." });
       return;
     }
 
@@ -1241,20 +1352,17 @@ async function handleApiRoutes(req, res, pathname) {
 
     const contentType = req.headers["content-type"] || "";
     let body = {};
+    let uploadedImage = null;
     let uploadedImagePath = null;
 
-    if (contentType.includes("multipart/form-data")) {
-      const multipart = await readMultipartFormData(req, contentType);
-      body = multipart.fields;
-
-      const uploadedImage = multipart.files.find((file) => file.fieldName === "image");
-
-      if (uploadedImage) {
-        uploadedImagePath = saveUploadedImage(uploadedImage);
-      }
-    } else {
-      body = await readJsonBody(req);
+    if (!contentType.includes("multipart/form-data")) {
+      sendJson(res, 400, { error: "يجب إرسال الإعلان مع صورة مباشرة ملتقطة من الكاميرا." });
+      return;
     }
+
+    const multipart = await readMultipartFormData(req, contentType);
+    body = multipart.fields;
+    uploadedImage = multipart.files.find((file) => file.fieldName === "image");
 
     const title = normalizeText(body.title);
     const city = normalizeText(body.city);
@@ -1262,33 +1370,69 @@ async function handleApiRoutes(req, res, pathname) {
     const description = normalizeText(body.description);
     const price = Number(body.price);
     const isFeatured = isTruthy(body.isFeatured) ? 1 : 0;
+    const imageSourceType = normalizeText(body.imageSourceType).toLowerCase();
 
     if (!title || !city || !category || !description || !Number.isFinite(price) || price <= 0) {
       sendJson(res, 400, { error: "بيانات الإعلان غير مكتملة أو غير صالحة." });
       return;
     }
 
-    const result = db.prepare(`
-      INSERT INTO listings (member_id, title, price, city, category, description, is_featured, image_path)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(
-      session.member_id,
-      title,
-      Math.round(price),
-      city,
-      category,
-      description,
-      isFeatured,
-      uploadedImagePath,
-    );
+    if (!uploadedImage) {
+      sendJson(res, 400, { error: "يجب التقاط صورة مباشرة وواضحة للمنتج قبل إرسال الإعلان." });
+      return;
+    }
 
-    sendJson(res, 201, {
-      message: isFeatured
-        ? "تم إرسال الإعلان وطلب تمييزه بنجاح."
-        : "تم نشر الإعلان بنجاح.",
-      listing: getListingById(Number(result.lastInsertRowid)),
-    });
-    return;
+    if (imageSourceType !== "camera") {
+      sendJson(res, 400, { error: "ارفع صورة المنتج عبر الالتقاط المباشر من الكاميرا فقط." });
+      return;
+    }
+
+    try {
+      uploadedImagePath = saveUploadedImage(uploadedImage);
+
+      const result = db.prepare(`
+        INSERT INTO listings (
+          member_id,
+          title,
+          price,
+          city,
+          category,
+          description,
+          approval_status,
+          approved_at,
+          is_featured,
+          image_path
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(
+        session.member_id,
+        title,
+        Math.round(price),
+        city,
+        category,
+        description,
+        "pending",
+        null,
+        isFeatured,
+        uploadedImagePath,
+      );
+
+      const submissionMessage = isFeatured
+        ? "تم إرسال الإعلان وطلب تمييزه. ستراجع الإدارة الصورة والطلب قبل اعتماد الظهور."
+        : "تم إرسال الإعلان بنجاح. ستراجع الإدارة الصورة أولًا للتأكد من أنها حقيقية وغير مخالفة قبل ظهوره.";
+
+      sendJson(res, 201, {
+        message: submissionMessage,
+        listing: getListingById(Number(result.lastInsertRowid)),
+      });
+      return;
+    } catch (error) {
+      if (uploadedImagePath) {
+        deleteUploadedFile(uploadedImagePath);
+      }
+
+      throw error;
+    }
   }
 
   sendJson(res, 404, { error: "المسار المطلوب غير موجود." });
@@ -1342,9 +1486,24 @@ function serveStatic(req, res, pathname) {
 
 function getStats() {
   const totalMembers = db.prepare("SELECT COUNT(*) AS count FROM members").get().count;
-  const totalListings = db.prepare("SELECT COUNT(*) AS count FROM listings").get().count;
-  const featuredListings = db.prepare("SELECT COUNT(*) AS count FROM listings WHERE is_featured = 1").get().count;
-  const totalCities = db.prepare("SELECT COUNT(DISTINCT city) AS count FROM listings").get().count;
+  const totalListings = db.prepare(`
+    SELECT COUNT(*) AS count
+    FROM listings l
+    INNER JOIN members m ON m.id = l.member_id
+    WHERE l.approval_status = 'approved' AND m.is_banned = 0
+  `).get().count;
+  const featuredListings = db.prepare(`
+    SELECT COUNT(*) AS count
+    FROM listings l
+    INNER JOIN members m ON m.id = l.member_id
+    WHERE l.approval_status = 'approved' AND l.is_featured = 1 AND m.is_banned = 0
+  `).get().count;
+  const totalCities = db.prepare(`
+    SELECT COUNT(DISTINCT l.city) AS count
+    FROM listings l
+    INNER JOIN members m ON m.id = l.member_id
+    WHERE l.approval_status = 'approved' AND m.is_banned = 0
+  `).get().count;
 
   return {
     totalMembers: Number(totalMembers),
@@ -1365,6 +1524,8 @@ function getListings() {
       l.category,
       l.description,
       l.image_path AS imagePath,
+      l.approval_status AS approvalStatus,
+      l.approved_at AS approvedAt,
       l.admin_highlight AS adminHighlight,
       l.is_featured AS isFeatured,
       l.created_at AS createdAt,
@@ -1372,8 +1533,8 @@ function getListings() {
       m.phone AS sellerPhone
     FROM listings l
     INNER JOIN members m ON m.id = l.member_id
-    WHERE m.is_banned = 0
-    ORDER BY l.is_featured DESC, l.created_at DESC
+    WHERE l.approval_status = 'approved' AND m.is_banned = 0
+    ORDER BY l.admin_highlight DESC, l.is_featured DESC, l.created_at DESC
   `).all();
 
   return rows.map(mapListingRow);
@@ -1390,6 +1551,8 @@ function getListingById(id) {
       l.category,
       l.description,
       l.image_path AS imagePath,
+      l.approval_status AS approvalStatus,
+      l.approved_at AS approvedAt,
       l.admin_highlight AS adminHighlight,
       l.is_featured AS isFeatured,
       l.created_at AS createdAt,
@@ -1522,7 +1685,8 @@ function getAdminStats() {
     pendingCouriers: Number(db.prepare("SELECT COUNT(*) AS count FROM couriers WHERE status = 'pending'").get().count),
     approvedCouriers: Number(db.prepare("SELECT COUNT(*) AS count FROM couriers WHERE status = 'approved'").get().count),
     pausedCouriers: Number(db.prepare("SELECT COUNT(*) AS count FROM couriers WHERE status = 'paused'").get().count),
-    highlightedListings: Number(db.prepare("SELECT COUNT(*) AS count FROM listings WHERE admin_highlight = 1").get().count),
+    highlightedListings: Number(db.prepare("SELECT COUNT(*) AS count FROM listings WHERE admin_highlight = 1 AND approval_status = 'approved'").get().count),
+    pendingListings: Number(db.prepare("SELECT COUNT(*) AS count FROM listings WHERE approval_status = 'pending'").get().count),
     bannedMembers: Number(db.prepare("SELECT COUNT(*) AS count FROM members WHERE is_banned = 1").get().count),
   };
 }
@@ -1538,6 +1702,8 @@ function getAdminListings(admin) {
       l.category,
       l.description,
       l.image_path AS imagePath,
+      l.approval_status AS approvalStatus,
+      l.approved_at AS approvedAt,
       l.admin_highlight AS adminHighlight,
       l.is_featured AS isFeatured,
       l.created_at AS createdAt,
@@ -1546,12 +1712,17 @@ function getAdminListings(admin) {
       m.is_banned AS sellerIsBanned
     FROM listings l
     INNER JOIN members m ON m.id = l.member_id
-    ORDER BY l.admin_highlight DESC, l.is_featured DESC, l.created_at DESC
+    ORDER BY
+      CASE WHEN l.approval_status = 'pending' THEN 0 ELSE 1 END,
+      l.admin_highlight DESC,
+      l.is_featured DESC,
+      l.created_at DESC
   `).all();
 
   return rows.map((row) => ({
     ...mapListingRow(row),
     sellerIsBanned: Boolean(row.sellerIsBanned),
+    canApprove: Boolean((admin.canManageListings || admin.canManageAdmins) && row.approvalStatus !== "approved"),
     canManageListings: Boolean(admin.canManageListings || admin.canManageAdmins),
     canBanMember: Boolean(admin.canBanMembers || admin.canManageAdmins),
   }));
@@ -1622,6 +1793,8 @@ function getAdminListingById(listingId, admin) {
       l.category,
       l.description,
       l.image_path AS imagePath,
+      l.approval_status AS approvalStatus,
+      l.approved_at AS approvedAt,
       l.admin_highlight AS adminHighlight,
       l.is_featured AS isFeatured,
       l.created_at AS createdAt,
@@ -1640,6 +1813,7 @@ function getAdminListingById(listingId, admin) {
   return {
     ...mapListingRow(row),
     sellerIsBanned: Boolean(row.sellerIsBanned),
+    canApprove: Boolean((admin.canManageListings || admin.canManageAdmins) && row.approvalStatus !== "approved"),
     canManageListings: Boolean(admin.canManageListings || admin.canManageAdmins),
     canBanMember: Boolean(admin.canBanMembers || admin.canManageAdmins),
   };
@@ -1678,6 +1852,9 @@ function getAccountSummary(memberId) {
       l.category,
       l.description,
       l.image_path AS imagePath,
+      l.approval_status AS approvalStatus,
+      l.approved_at AS approvedAt,
+      l.admin_highlight AS adminHighlight,
       l.is_featured AS isFeatured,
       l.created_at AS createdAt,
       m.full_name AS sellerName,
@@ -1698,6 +1875,9 @@ function getAccountSummary(memberId) {
       l.category,
       l.description,
       l.image_path AS imagePath,
+      l.approval_status AS approvalStatus,
+      l.approved_at AS approvedAt,
+      l.admin_highlight AS adminHighlight,
       l.is_featured AS isFeatured,
       l.created_at AS createdAt,
       m.full_name AS sellerName,
@@ -1706,6 +1886,7 @@ function getAccountSummary(memberId) {
     INNER JOIN listings l ON l.id = f.listing_id
     INNER JOIN members m ON m.id = l.member_id
     WHERE f.member_id = ?
+      AND l.approval_status = 'approved'
       AND m.is_banned = 0
     ORDER BY f.created_at DESC
   `).all(memberId).map(mapListingRow);
@@ -1727,6 +1908,10 @@ function mapListingRow(row) {
     category: row.category,
     description: row.description,
     imageUrl: row.imagePath || null,
+    approvalStatus: row.approvalStatus || "approved",
+    approvalStatusLabel: getListingApprovalLabel(row.approvalStatus || "approved"),
+    isApproved: (row.approvalStatus || "approved") === "approved",
+    approvedAt: row.approvedAt || "",
     isAdminHighlighted: Boolean(row.adminHighlight),
     isFeatured: Boolean(row.isFeatured),
     createdAt: row.createdAt,
@@ -2021,14 +2206,18 @@ function parseMultipartFormData(buffer, boundary) {
 }
 
 function saveUploadedImage(file) {
-  const mimeType = normalizeText(file.mimeType).toLowerCase();
-  const allowedMimeTypes = new Map([
-    ["image/jpeg", ".jpg"],
-    ["image/png", ".png"],
-    ["image/webp", ".webp"],
-  ]);
+  const reportedMimeType = normalizeText(file.mimeType).toLowerCase();
+  const detectedImageType = detectImageType(file.buffer);
 
-  if (!allowedMimeTypes.has(mimeType)) {
+  if (!detectedImageType) {
+    throw createHttpError(400, "ملف الصورة غير صالح أو لا يحتوي على بيانات صورة حقيقية.");
+  }
+
+  if (reportedMimeType && detectedImageType.mimeType !== reportedMimeType) {
+    throw createHttpError(400, "نوع ملف الصورة لا يطابق محتواه الحقيقي.");
+  }
+
+  if (!["image/jpeg", "image/png", "image/webp"].includes(detectedImageType.mimeType)) {
     throw createHttpError(400, "صيغة الصورة غير مدعومة. استخدم JPG أو PNG أو WEBP.");
   }
 
@@ -2040,12 +2229,214 @@ function saveUploadedImage(file) {
     throw createHttpError(413, "حجم الصورة كبير جدًا. الحد الأقصى هو 5 ميغابايت.");
   }
 
-  const extension = allowedMimeTypes.get(mimeType);
+  const dimensions = getImageDimensions(file.buffer, detectedImageType.mimeType);
+
+  if (!dimensions) {
+    throw createHttpError(400, "تعذر قراءة أبعاد الصورة. التقط صورة أوضح ثم حاول مجددًا.");
+  }
+
+  if (dimensions.width < MIN_IMAGE_WIDTH || dimensions.height < MIN_IMAGE_HEIGHT) {
+    throw createHttpError(
+      400,
+      `أبعاد الصورة صغيرة جدًا. الحد الأدنى هو ${MIN_IMAGE_WIDTH}x${MIN_IMAGE_HEIGHT} بكسل.`,
+    );
+  }
+
+  const extension = detectedImageType.extension;
   const fileName = `${Date.now()}-${crypto.randomBytes(8).toString("hex")}${extension}`;
   const absolutePath = path.join(UPLOADS_DIR, fileName);
 
   fs.writeFileSync(absolutePath, file.buffer);
   return `/uploads/${fileName}`;
+}
+
+function detectImageType(buffer) {
+  if (!Buffer.isBuffer(buffer) || buffer.length < 12) {
+    return null;
+  }
+
+  if (buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff) {
+    return {
+      mimeType: "image/jpeg",
+      extension: ".jpg",
+    };
+  }
+
+  if (
+    buffer[0] === 0x89 &&
+    buffer[1] === 0x50 &&
+    buffer[2] === 0x4e &&
+    buffer[3] === 0x47 &&
+    buffer[4] === 0x0d &&
+    buffer[5] === 0x0a &&
+    buffer[6] === 0x1a &&
+    buffer[7] === 0x0a
+  ) {
+    return {
+      mimeType: "image/png",
+      extension: ".png",
+    };
+  }
+
+  if (
+    buffer.toString("ascii", 0, 4) === "RIFF" &&
+    buffer.toString("ascii", 8, 12) === "WEBP"
+  ) {
+    return {
+      mimeType: "image/webp",
+      extension: ".webp",
+    };
+  }
+
+  return null;
+}
+
+function getImageDimensions(buffer, mimeType) {
+  if (mimeType === "image/png") {
+    return getPngDimensions(buffer);
+  }
+
+  if (mimeType === "image/jpeg") {
+    return getJpegDimensions(buffer);
+  }
+
+  if (mimeType === "image/webp") {
+    return getWebpDimensions(buffer);
+  }
+
+  return null;
+}
+
+function getPngDimensions(buffer) {
+  if (buffer.length < 24) {
+    return null;
+  }
+
+  return {
+    width: buffer.readUInt32BE(16),
+    height: buffer.readUInt32BE(20),
+  };
+}
+
+function getJpegDimensions(buffer) {
+  if (buffer.length < 4 || buffer[0] !== 0xff || buffer[1] !== 0xd8) {
+    return null;
+  }
+
+  let offset = 2;
+
+  while (offset < buffer.length) {
+    if (buffer[offset] !== 0xff) {
+      offset += 1;
+      continue;
+    }
+
+    while (offset < buffer.length && buffer[offset] === 0xff) {
+      offset += 1;
+    }
+
+    if (offset >= buffer.length) {
+      break;
+    }
+
+    const marker = buffer[offset];
+    offset += 1;
+
+    if (marker === 0xd8 || marker === 0xd9) {
+      continue;
+    }
+
+    if (marker === 0xda) {
+      break;
+    }
+
+    if (offset + 1 >= buffer.length) {
+      break;
+    }
+
+    const segmentLength = buffer.readUInt16BE(offset);
+
+    if (segmentLength < 2 || offset + segmentLength > buffer.length) {
+      break;
+    }
+
+    if (isJpegStartOfFrameMarker(marker)) {
+      if (offset + 7 > buffer.length) {
+        break;
+      }
+
+      return {
+        height: buffer.readUInt16BE(offset + 3),
+        width: buffer.readUInt16BE(offset + 5),
+      };
+    }
+
+    offset += segmentLength;
+  }
+
+  return null;
+}
+
+function isJpegStartOfFrameMarker(marker) {
+  return [
+    0xc0,
+    0xc1,
+    0xc2,
+    0xc3,
+    0xc5,
+    0xc6,
+    0xc7,
+    0xc9,
+    0xca,
+    0xcb,
+    0xcd,
+    0xce,
+    0xcf,
+  ].includes(marker);
+}
+
+function getWebpDimensions(buffer) {
+  if (buffer.length < 30) {
+    return null;
+  }
+
+  const chunkType = buffer.toString("ascii", 12, 16);
+
+  if (chunkType === "VP8X") {
+    return {
+      width: 1 + buffer[24] + (buffer[25] << 8) + (buffer[26] << 16),
+      height: 1 + buffer[27] + (buffer[28] << 8) + (buffer[29] << 16),
+    };
+  }
+
+  if (chunkType === "VP8 " && buffer.length >= 30) {
+    if (buffer[23] !== 0x9d || buffer[24] !== 0x01 || buffer[25] !== 0x2a) {
+      return null;
+    }
+
+    return {
+      width: buffer.readUInt16LE(26) & 0x3fff,
+      height: buffer.readUInt16LE(28) & 0x3fff,
+    };
+  }
+
+  if (chunkType === "VP8L" && buffer.length >= 25) {
+    if (buffer[20] !== 0x2f) {
+      return null;
+    }
+
+    const b0 = buffer[21];
+    const b1 = buffer[22];
+    const b2 = buffer[23];
+    const b3 = buffer[24];
+
+    return {
+      width: 1 + (((b1 & 0x3f) << 8) | b0),
+      height: 1 + (((b3 & 0x0f) << 10) | (b2 << 2) | ((b1 & 0xc0) >> 6)),
+    };
+  }
+
+  return null;
 }
 
 function deleteUploadedFile(relativePath) {
@@ -2110,6 +2501,12 @@ function getCourierStatusLabel(status) {
   };
 
   return labels[status] || "قيد المراجعة";
+}
+
+function getListingApprovalLabel(status) {
+  return status === "approved"
+    ? "معتمد"
+    : "بانتظار موافقة الإدارة";
 }
 
 function isTruthy(value) {

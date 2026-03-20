@@ -12,6 +12,7 @@ const state = {
     pendingCouriers: 0,
     approvedCouriers: 0,
     pausedCouriers: 0,
+    pendingListings: 0,
     highlightedListings: 0,
     bannedMembers: 0,
     totalManagers: 0,
@@ -141,6 +142,10 @@ function renderDashboard() {
     : state.admin.canBanMembers
       ? "يمكنك من هذا القسم الوصول السريع إلى حظر صاحب الإعلان."
       : "لا تملك صلاحية لإدارة الإعلانات.";
+  if (state.admin.canManageListings || state.admin.canManageAdmins) {
+    adminListingsNote.textContent = `ÙŠÙ…ÙƒÙ†Ùƒ Ø§Ø¹ØªÙ…Ø§Ø¯ Ø§Ù„Ø¥Ø¹Ù„Ø§Ù† Ù„ÙŠØ¸Ù‡Ø± Ù„Ù„Ø²ÙˆØ§Ø±ØŒ ÙˆØ¹Ø¯Ø¯ Ø§Ù„Ø¥Ø¹Ù„Ø§Ù†Ø§Øª Ø§Ù„Ù…Ø¹Ù„Ù‚Ø© Ø­Ø§Ù„ÙŠÙ‹Ø§: ${formatNumber(state.stats.pendingListings || 0)}.`;
+  }
+
   adminMembersNote.textContent = state.admin.canBanMembers || state.admin.canManageAdmins
     ? "يمكنك حظر المستخدم أو فك الحظر مباشرة من هذه القائمة."
     : "لا تملك صلاحية لحظر المستخدمين.";
@@ -223,6 +228,7 @@ function renderListings() {
           <p>${escapeHtml(listing.sellerName)} | ${escapeHtml(listing.city)} | ${formatCurrency(listing.price)}</p>
         </div>
         <div class="admin-manager-permissions">
+          <span class="admin-status-chip ${listing.isApproved ? "status-approved" : "status-pending"}">${escapeHtml(listing.approvalStatusLabel)}</span>
           ${listing.isAdminHighlighted ? '<span class="admin-status-chip status-gold">إطار ذهبي</span>' : ""}
           ${listing.isFeatured ? '<span class="admin-status-chip status-pending">إعلان مدفوع</span>' : ""}
           ${listing.sellerIsBanned ? '<span class="admin-status-chip status-paused">صاحب الإعلان محظور</span>' : ""}
@@ -234,6 +240,7 @@ function renderListings() {
       <p class="admin-listing-description">${escapeHtml(listing.description)}</p>
 
       <div class="admin-courier-actions">
+        ${renderActionButton("approve-listing", listing.isApproved ? "ØªÙ… Ø§Ù„Ø§Ø¹ØªÙ…Ø§Ø¯" : "Ø§Ø¹ØªÙ…Ø§Ø¯ Ø§Ù„Ø¥Ø¹Ù„Ø§Ù†", listing.isApproved, listing.canApprove, { listingId: listing.id, type: "listing-approve" })}
         ${renderActionButton(listing.isAdminHighlighted ? "remove-gold" : "gold", listing.isAdminHighlighted ? "إزالة الإطار الذهبي" : "تمييز بإطار ذهبي", listing.isAdminHighlighted, listing.canManageListings, { listingId: listing.id, type: "listing-highlight", highlighted: listing.isAdminHighlighted ? "0" : "1" })}
         ${renderActionButton("remove-image", "حذف الصورة", false, listing.canManageListings && Boolean(listing.imageUrl), { listingId: listing.id, type: "listing-remove-image" })}
         ${renderActionButton("delete-listing", "حذف الإعلان", false, listing.canManageListings, { listingId: listing.id, type: "listing-delete" })}
@@ -326,6 +333,12 @@ function renderManagers() {
 }
 
 function bindAdminActionButtons(rootElement) {
+  rootElement.querySelectorAll(".admin-action-button[data-type='listing-approve']").forEach((button) => {
+    button.addEventListener("click", async () => {
+      await handleListingApproval(Number(button.dataset.listingId));
+    });
+  });
+
   rootElement.querySelectorAll(".admin-action-button[data-type='listing-highlight']").forEach((button) => {
     button.addEventListener("click", async () => {
       await handleListingHighlight(Number(button.dataset.listingId), button.dataset.highlighted === "1");
@@ -462,6 +475,30 @@ async function handleListingHighlight(listingId, highlighted) {
       ...state.stats,
       ...(response.stats || {}),
     };
+    renderDashboard();
+  } catch (error) {
+    adminMessage.textContent = error.message;
+  }
+}
+
+async function handleListingApproval(listingId) {
+  if (!state.admin?.canManageListings && !state.admin?.canManageAdmins) {
+    adminMessage.textContent = "Ù„ÙŠØ³ Ù„Ø¯ÙŠÙƒ ØµÙ„Ø§Ø­ÙŠØ© Ù„Ø§Ø¹ØªÙ…Ø§Ø¯ Ø§Ù„Ø¥Ø¹Ù„Ø§Ù†Ø§Øª.";
+    return;
+  }
+
+  try {
+    const response = await apiRequest(`/api/admin/listings/${listingId}/approve`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+    });
+
+    state.listings = response.listings || state.listings;
+    state.stats = {
+      ...state.stats,
+      ...(response.stats || {}),
+    };
+    adminMessage.textContent = response.message || "";
     renderDashboard();
   } catch (error) {
     adminMessage.textContent = error.message;
@@ -613,6 +650,7 @@ function clearSession() {
     pendingCouriers: 0,
     approvedCouriers: 0,
     pausedCouriers: 0,
+    pendingListings: 0,
     highlightedListings: 0,
     bannedMembers: 0,
     totalManagers: 0,
