@@ -1,0 +1,16 @@
+{
+  "name": "hoon-store",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Hoon Store marketplace platform",
+  "main": "server.js",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "check": "node --check server.js && node --check admin.js && node --check script.js"
+  }
+}

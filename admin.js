@@ -1,0 +1,684 @@
+const ADMIN_TOKEN_KEY = "souq-syria-admin-token";
+const ADMIN_PANEL_ACCESS_PATH = normalizeAdminPanelPath(window.location.pathname);
+
+const state = {
+  token: localStorage.getItem(ADMIN_TOKEN_KEY) || "",
+  admin: null,
+  couriers: [],
+  listings: [],
+  members: [],
+  managers: [],
+  stats: {
+    pendingCouriers: 0,
+    approvedCouriers: 0,
+    pausedCouriers: 0,
+    highlightedListings: 0,
+    bannedMembers: 0,
+    totalManagers: 0,
+  },
+};
+
+const adminLoginShell = document.querySelector("#adminLoginShell");
+const adminDashboard = document.querySelector("#adminDashboard");
+const adminLoginForm = document.querySelector("#adminLoginForm");
+const adminMessage = document.querySelector("#adminMessage");
+const adminLogoutButton = document.querySelector("#adminLogoutButton");
+const adminWelcomeTitle = document.querySelector("#adminWelcomeTitle");
+const adminSummaryNote = document.querySelector("#adminSummaryNote");
+const adminPendingCount = document.querySelector("#adminPendingCount");
+const adminApprovedCount = document.querySelector("#adminApprovedCount");
+const adminPausedCount = document.querySelector("#adminPausedCount");
+const adminGoldCount = document.querySelector("#adminGoldCount");
+const adminBannedMembersCount = document.querySelector("#adminBannedMembersCount");
+const adminManagersCount = document.querySelector("#adminManagersCount");
+const adminCourierList = document.querySelector("#adminCourierList");
+const adminListingsList = document.querySelector("#adminListingsList");
+const adminMembersList = document.querySelector("#adminMembersList");
+const adminManagersList = document.querySelector("#adminManagersList");
+const adminListingsNote = document.querySelector("#adminListingsNote");
+const adminMembersNote = document.querySelector("#adminMembersNote");
+const adminPermissionNote = document.querySelector("#adminPermissionNote");
+const managerFormShell = document.querySelector("#managerFormShell");
+const managerForm = document.querySelector("#managerForm");
+const managerMessage = document.querySelector("#managerMessage");
+
+bootstrap();
+
+async function bootstrap() {
+  bindEvents();
+
+  if (state.token) {
+    await loadDashboard();
+  } else {
+    renderState();
+  }
+}
+
+function bindEvents() {
+  adminLoginForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    await handleAdminLogin();
+  });
+
+  adminLogoutButton.addEventListener("click", async () => {
+    await handleAdminLogout();
+  });
+
+  managerForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    await handleManagerCreate();
+  });
+}
+
+async function loadDashboard() {
+  try {
+    const response = await apiRequest("/api/admin/dashboard", {
+      headers: getAuthHeaders(),
+    });
+
+    hydrateDashboard(response);
+    renderState();
+  } catch (error) {
+    clearSession();
+    adminMessage.textContent = error.message;
+    renderState();
+  }
+}
+
+function hydrateDashboard(response) {
+  state.admin = response.admin || null;
+  state.couriers = response.couriers || [];
+  state.listings = response.listings || [];
+  state.members = response.members || [];
+  state.managers = response.managers || [];
+  state.stats = {
+    ...state.stats,
+    ...(response.stats || {}),
+  };
+}
+
+function renderState() {
+  const loggedIn = Boolean(state.token) && Boolean(state.admin);
+
+  adminLoginShell.classList.toggle("hidden", loggedIn);
+  adminDashboard.classList.toggle("hidden", !loggedIn);
+
+  if (!loggedIn) {
+    adminPendingCount.textContent = "0";
+    adminApprovedCount.textContent = "0";
+    adminPausedCount.textContent = "0";
+    adminGoldCount.textContent = "0";
+    adminBannedMembersCount.textContent = "0";
+    adminManagersCount.textContent = "0";
+    adminCourierList.innerHTML = `<div class="admin-empty">سجّل دخول الإدارة لعرض الطلبات.</div>`;
+    adminListingsList.innerHTML = `<div class="admin-empty">سجّل دخول الإدارة لعرض الإعلانات.</div>`;
+    adminMembersList.innerHTML = `<div class="admin-empty">سجّل دخول الإدارة لعرض المستخدمين.</div>`;
+    adminManagersList.innerHTML = `<div class="admin-empty">سجّل دخول الإدارة لعرض المديرين.</div>`;
+    managerFormShell.classList.add("hidden");
+    adminListingsNote.textContent = "بعد تسجيل الدخول ستظهر هنا إجراءات الإعلانات حسب صلاحياتك.";
+    adminMembersNote.textContent = "بعد تسجيل الدخول ستظهر هنا إجراءات المستخدمين حسب صلاحياتك.";
+    adminPermissionNote.textContent = "تظهر هنا صلاحياتك الحالية بعد تسجيل الدخول.";
+    return;
+  }
+
+  renderDashboard();
+}
+
+function renderDashboard() {
+  adminWelcomeTitle.textContent = `${state.admin.roleLabel} - ${state.admin.fullName}`;
+  adminSummaryNote.textContent = `تسجيل الدخول الحالي باسم ${state.admin.username}. يمكنك استخدام اسم المستخدم أو البريد الإلكتروني للدخول إلى الإدارة.`;
+  adminPendingCount.textContent = formatNumber(state.stats.pendingCouriers);
+  adminApprovedCount.textContent = formatNumber(state.stats.approvedCouriers);
+  adminPausedCount.textContent = formatNumber(state.stats.pausedCouriers);
+  adminGoldCount.textContent = formatNumber(state.stats.highlightedListings);
+  adminBannedMembersCount.textContent = formatNumber(state.stats.bannedMembers);
+  adminManagersCount.textContent = formatNumber(state.stats.totalManagers);
+  adminPermissionNote.textContent = getPermissionSummary(state.admin);
+
+  managerFormShell.classList.toggle("hidden", !state.admin.canManageAdmins);
+  adminListingsNote.textContent = state.admin.canManageListings || state.admin.canManageAdmins
+    ? "يمكنك تمييز الإعلان بإطار ذهبي أو حذف الصورة أو حذف الإعلان."
+    : state.admin.canBanMembers
+      ? "يمكنك من هذا القسم الوصول السريع إلى حظر صاحب الإعلان."
+      : "لا تملك صلاحية لإدارة الإعلانات.";
+  adminMembersNote.textContent = state.admin.canBanMembers || state.admin.canManageAdmins
+    ? "يمكنك حظر المستخدم أو فك الحظر مباشرة من هذه القائمة."
+    : "لا تملك صلاحية لحظر المستخدمين.";
+
+  renderCouriers();
+  renderListings();
+  renderMembers();
+  renderManagers();
+}
+
+function renderCouriers() {
+  if (!state.couriers.length) {
+    adminCourierList.innerHTML = `<div class="admin-empty">لا توجد طلبات مندوبين مسجلة حاليًا.</div>`;
+    return;
+  }
+
+  adminCourierList.innerHTML = state.couriers.map((courier) => `
+    <article class="admin-courier-card">
+      <div class="admin-courier-head">
+        <div>
+          <h4>${escapeHtml(courier.fullName)}</h4>
+          <p>${escapeHtml(courier.phone)} | ${escapeHtml(courier.city)} | ${formatDate(courier.createdAt)}</p>
+        </div>
+        <span class="admin-status-chip ${getCourierStatusClass(courier.status)}">${escapeHtml(courier.statusLabel)}</span>
+      </div>
+
+      <div class="admin-courier-meta">
+        <span class="admin-meta-pill">المركبة: ${escapeHtml(courier.vehicleType)}</span>
+        <span class="admin-meta-pill">التغطية: ${escapeHtml(courier.coverageCities || courier.city)}</span>
+        <span class="admin-meta-pill">${courier.nationalIdNumber ? `رقم الهوية: ${escapeHtml(courier.nationalIdNumber)}` : "المستندات مخفية حسب الصلاحية"}</span>
+      </div>
+
+      ${renderCourierMedia(courier)}
+
+      <div class="admin-courier-actions">
+        ${renderActionButton("pending", "قيد المراجعة", courier.status === "pending", state.admin.canManageCouriers, { courierId: courier.id, type: "courier-status" })}
+        ${renderActionButton("approved", "جاهز للعمل", courier.status === "approved", state.admin.canManageCouriers, { courierId: courier.id, type: "courier-status" })}
+        ${renderActionButton("paused", "موقوف مؤقتًا", courier.status === "paused", state.admin.canManageCouriers, { courierId: courier.id, type: "courier-status" })}
+      </div>
+    </article>
+  `).join("");
+
+  adminCourierList.querySelectorAll(".admin-action-button[data-type='courier-status']").forEach((button) => {
+    button.addEventListener("click", async () => {
+      await handleCourierStatusUpdate(Number(button.dataset.courierId), button.dataset.status);
+    });
+  });
+}
+
+function renderCourierMedia(courier) {
+  if (!courier.identityImageUrl || !courier.livePhotoUrl) {
+    return `<div class="admin-empty">عرض المستندات غير متاح لهذا الحساب الإداري.</div>`;
+  }
+
+  return `
+    <div class="admin-media-grid">
+      <a class="admin-media-link" href="${escapeHtmlAttribute(courier.identityImageUrl)}" target="_blank" rel="noopener noreferrer">
+        <img src="${escapeHtmlAttribute(courier.identityImageUrl)}" alt="هوية ${escapeHtmlAttribute(courier.fullName)}">
+        <p class="admin-media-caption">صورة الهوية الشخصية</p>
+      </a>
+      <a class="admin-media-link" href="${escapeHtmlAttribute(courier.livePhotoUrl)}" target="_blank" rel="noopener noreferrer">
+        <img src="${escapeHtmlAttribute(courier.livePhotoUrl)}" alt="الصورة المباشرة للمندوب ${escapeHtmlAttribute(courier.fullName)}">
+        <p class="admin-media-caption">الصورة المباشرة من الكاميرا</p>
+      </a>
+    </div>
+  `;
+}
+
+function renderListings() {
+  if (!state.listings.length) {
+    adminListingsList.innerHTML = `<div class="admin-empty">لا توجد إعلانات منشورة حاليًا.</div>`;
+    return;
+  }
+
+  adminListingsList.innerHTML = state.listings.map((listing) => `
+    <article class="admin-listing-card ${listing.isAdminHighlighted ? "admin-listing-card-gold" : ""}">
+      <div class="admin-courier-head">
+        <div>
+          <h4>${escapeHtml(listing.title)}</h4>
+          <p>${escapeHtml(listing.sellerName)} | ${escapeHtml(listing.city)} | ${formatCurrency(listing.price)}</p>
+        </div>
+        <div class="admin-manager-permissions">
+          ${listing.isAdminHighlighted ? '<span class="admin-status-chip status-gold">إطار ذهبي</span>' : ""}
+          ${listing.isFeatured ? '<span class="admin-status-chip status-pending">إعلان مدفوع</span>' : ""}
+          ${listing.sellerIsBanned ? '<span class="admin-status-chip status-paused">صاحب الإعلان محظور</span>' : ""}
+        </div>
+      </div>
+
+      ${renderListingAdminMedia(listing)}
+
+      <p class="admin-listing-description">${escapeHtml(listing.description)}</p>
+
+      <div class="admin-courier-actions">
+        ${renderActionButton(listing.isAdminHighlighted ? "remove-gold" : "gold", listing.isAdminHighlighted ? "إزالة الإطار الذهبي" : "تمييز بإطار ذهبي", listing.isAdminHighlighted, listing.canManageListings, { listingId: listing.id, type: "listing-highlight", highlighted: listing.isAdminHighlighted ? "0" : "1" })}
+        ${renderActionButton("remove-image", "حذف الصورة", false, listing.canManageListings && Boolean(listing.imageUrl), { listingId: listing.id, type: "listing-remove-image" })}
+        ${renderActionButton("delete-listing", "حذف الإعلان", false, listing.canManageListings, { listingId: listing.id, type: "listing-delete" })}
+        ${renderActionButton(listing.sellerIsBanned ? "unban-member" : "ban-member", listing.sellerIsBanned ? "فك حظر المستخدم" : "حظر المستخدم", listing.sellerIsBanned, listing.canBanMember, { memberId: listing.sellerId, type: "member-ban", banned: listing.sellerIsBanned ? "0" : "1" })}
+      </div>
+    </article>
+  `).join("");
+
+  bindAdminActionButtons(adminListingsList);
+}
+
+function renderListingAdminMedia(listing) {
+  if (!listing.imageUrl) {
+    return `<div class="admin-empty">لا توجد صورة مرفقة لهذا الإعلان.</div>`;
+  }
+
+  return `
+    <a class="admin-media-link admin-media-link-wide" href="${escapeHtmlAttribute(listing.imageUrl)}" target="_blank" rel="noopener noreferrer">
+      <img src="${escapeHtmlAttribute(listing.imageUrl)}" alt="صورة الإعلان ${escapeHtmlAttribute(listing.title)}">
+      <p class="admin-media-caption">الصورة الحالية للإعلان</p>
+    </a>
+  `;
+}
+
+function renderMembers() {
+  if (!state.admin.canBanMembers && !state.admin.canManageAdmins) {
+    adminMembersList.innerHTML = `<div class="admin-empty">لا تملك صلاحية لإدارة المستخدمين.</div>`;
+    return;
+  }
+
+  if (!state.members.length) {
+    adminMembersList.innerHTML = `<div class="admin-empty">لا توجد حسابات مستخدمين مسجلة حاليًا.</div>`;
+    return;
+  }
+
+  adminMembersList.innerHTML = state.members.map((member) => `
+    <article class="admin-member-card">
+      <div class="admin-courier-head">
+        <div>
+          <h4>${escapeHtml(member.fullName)}</h4>
+          <p>${escapeHtml(member.email)} | ${escapeHtml(member.phone)} | ${escapeHtml(member.city)}</p>
+        </div>
+        <span class="admin-status-chip ${member.isBanned ? "status-paused" : "status-approved"}">${member.isBanned ? "محظور" : "نشط"}</span>
+      </div>
+
+      <div class="admin-courier-meta">
+        <span class="admin-meta-pill">عدد الإعلانات: ${formatNumber(member.listingsCount)}</span>
+        <span class="admin-meta-pill">تاريخ التسجيل: ${formatDate(member.createdAt)}</span>
+        <span class="admin-meta-pill">${member.bannedAt ? `تاريخ الحظر: ${formatDate(member.bannedAt)}` : "لا يوجد حظر"}</span>
+      </div>
+
+      <div class="admin-courier-actions">
+        ${renderActionButton(member.isBanned ? "unban-member" : "ban-member", member.isBanned ? "فك الحظر" : "حظر المستخدم", member.isBanned, member.canBanMember, { memberId: member.id, type: "member-ban", banned: member.isBanned ? "0" : "1" })}
+      </div>
+    </article>
+  `).join("");
+
+  bindAdminActionButtons(adminMembersList);
+}
+
+function renderManagers() {
+  if (!state.admin.canManageAdmins) {
+    adminManagersList.innerHTML = `<div class="admin-empty">لا تملك صلاحية إدارة المديرين أو إضافة حسابات جديدة.</div>`;
+    return;
+  }
+
+  if (!state.managers.length) {
+    adminManagersList.innerHTML = `<div class="admin-empty">لا توجد حسابات إدارية إضافية بعد.</div>`;
+    return;
+  }
+
+  adminManagersList.innerHTML = state.managers.map((manager) => `
+    <article class="admin-manager-card">
+      <div class="admin-courier-head">
+        <div>
+          <h4>${escapeHtml(manager.fullName)}</h4>
+          <p>${escapeHtml(manager.username)} | ${escapeHtml(manager.email)}</p>
+        </div>
+        <span class="admin-status-chip status-approved">${escapeHtml(manager.roleLabel)}</span>
+      </div>
+      <div class="admin-manager-permissions">
+        ${renderPermissionPill("إدارة المديرين", manager.canManageAdmins)}
+        ${renderPermissionPill("إدارة المندوبين", manager.canManageCouriers)}
+        ${renderPermissionPill("عرض المستندات", manager.canViewCourierDocuments)}
+        ${renderPermissionPill("إدارة الإعلانات", manager.canManageListings)}
+        ${renderPermissionPill("حظر المستخدمين", manager.canBanMembers)}
+      </div>
+    </article>
+  `).join("");
+}
+
+function bindAdminActionButtons(rootElement) {
+  rootElement.querySelectorAll(".admin-action-button[data-type='listing-highlight']").forEach((button) => {
+    button.addEventListener("click", async () => {
+      await handleListingHighlight(Number(button.dataset.listingId), button.dataset.highlighted === "1");
+    });
+  });
+
+  rootElement.querySelectorAll(".admin-action-button[data-type='listing-remove-image']").forEach((button) => {
+    button.addEventListener("click", async () => {
+      await handleListingImageRemoval(Number(button.dataset.listingId));
+    });
+  });
+
+  rootElement.querySelectorAll(".admin-action-button[data-type='listing-delete']").forEach((button) => {
+    button.addEventListener("click", async () => {
+      await handleListingDelete(Number(button.dataset.listingId));
+    });
+  });
+
+  rootElement.querySelectorAll(".admin-action-button[data-type='member-ban']").forEach((button) => {
+    button.addEventListener("click", async () => {
+      await handleMemberBan(Number(button.dataset.memberId), button.dataset.banned === "1");
+    });
+  });
+}
+
+async function handleAdminLogin() {
+  adminMessage.textContent = "جارٍ تسجيل دخول الإدارة...";
+
+  const payload = Object.fromEntries(new FormData(adminLoginForm).entries());
+
+  try {
+    const response = await apiRequest("/api/admin/login", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+
+    state.token = response.token;
+    localStorage.setItem(ADMIN_TOKEN_KEY, response.token);
+    hydrateDashboard(response);
+    adminLoginForm.reset();
+    adminMessage.textContent = response.message;
+    renderState();
+  } catch (error) {
+    adminMessage.textContent = error.message;
+  }
+}
+
+async function handleAdminLogout() {
+  try {
+    await apiRequest("/api/admin/logout", {
+      method: "POST",
+      headers: getAuthHeaders(),
+    });
+  } catch {
+    // تجاهل الخطأ لأننا سنمسح الجلسة محليًا في كل الأحوال.
+  }
+
+  clearSession();
+  adminMessage.textContent = "تم تسجيل خروج الإدارة.";
+  renderState();
+}
+
+async function handleManagerCreate() {
+  managerMessage.textContent = "جارٍ إضافة المدير...";
+
+  const formData = new FormData(managerForm);
+  const payload = Object.fromEntries(formData.entries());
+  payload.canManageAdmins = formData.has("canManageAdmins");
+  payload.canManageCouriers = formData.has("canManageCouriers");
+  payload.canViewCourierDocuments = formData.has("canViewCourierDocuments");
+  payload.canManageListings = formData.has("canManageListings");
+  payload.canBanMembers = formData.has("canBanMembers");
+
+  try {
+    const response = await apiRequest("/api/admin/managers", {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: JSON.stringify(payload),
+    });
+
+    state.managers = response.managers || state.managers;
+    state.stats = {
+      ...state.stats,
+      ...(response.stats || {}),
+    };
+    managerForm.reset();
+    managerMessage.textContent = response.message;
+    renderManagers();
+    adminManagersCount.textContent = formatNumber(state.stats.totalManagers);
+  } catch (error) {
+    managerMessage.textContent = error.message;
+  }
+}
+
+async function handleCourierStatusUpdate(courierId, status) {
+  if (!state.admin?.canManageCouriers) {
+    adminMessage.textContent = "ليس لديك صلاحية لتحديث حالات المندوبين.";
+    return;
+  }
+
+  try {
+    const response = await apiRequest(`/api/admin/couriers/${courierId}/status`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ status }),
+    });
+
+    state.couriers = response.couriers || state.couriers;
+    state.stats = {
+      ...state.stats,
+      ...(response.stats || {}),
+    };
+    renderDashboard();
+  } catch (error) {
+    adminMessage.textContent = error.message;
+  }
+}
+
+async function handleListingHighlight(listingId, highlighted) {
+  if (!state.admin?.canManageListings && !state.admin?.canManageAdmins) {
+    adminMessage.textContent = "ليس لديك صلاحية لتمييز الإعلانات.";
+    return;
+  }
+
+  try {
+    const response = await apiRequest(`/api/admin/listings/${listingId}/highlight`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ highlighted }),
+    });
+
+    state.listings = response.listings || state.listings;
+    state.stats = {
+      ...state.stats,
+      ...(response.stats || {}),
+    };
+    renderDashboard();
+  } catch (error) {
+    adminMessage.textContent = error.message;
+  }
+}
+
+async function handleListingImageRemoval(listingId) {
+  if (!state.admin?.canManageListings && !state.admin?.canManageAdmins) {
+    adminMessage.textContent = "ليس لديك صلاحية لحذف صور الإعلانات.";
+    return;
+  }
+
+  try {
+    const response = await apiRequest(`/api/admin/listings/${listingId}/remove-image`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+    });
+
+    state.listings = response.listings || state.listings;
+    state.stats = {
+      ...state.stats,
+      ...(response.stats || {}),
+    };
+    renderDashboard();
+  } catch (error) {
+    adminMessage.textContent = error.message;
+  }
+}
+
+async function handleListingDelete(listingId) {
+  if (!state.admin?.canManageListings && !state.admin?.canManageAdmins) {
+    adminMessage.textContent = "ليس لديك صلاحية لحذف الإعلانات.";
+    return;
+  }
+
+  try {
+    const response = await apiRequest(`/api/admin/listings/${listingId}`, {
+      method: "DELETE",
+      headers: getAuthHeaders(),
+    });
+
+    state.listings = response.listings || state.listings;
+    state.members = response.members || state.members;
+    state.stats = {
+      ...state.stats,
+      ...(response.stats || {}),
+    };
+    renderDashboard();
+  } catch (error) {
+    adminMessage.textContent = error.message;
+  }
+}
+
+async function handleMemberBan(memberId, banned) {
+  if (!state.admin?.canBanMembers && !state.admin?.canManageAdmins) {
+    adminMessage.textContent = "ليس لديك صلاحية لحظر المستخدمين.";
+    return;
+  }
+
+  try {
+    const response = await apiRequest(`/api/admin/members/${memberId}/ban`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ banned }),
+    });
+
+    state.members = response.members || state.members;
+    state.listings = response.listings || state.listings;
+    state.stats = {
+      ...state.stats,
+      ...(response.stats || {}),
+    };
+    renderDashboard();
+  } catch (error) {
+    adminMessage.textContent = error.message;
+  }
+}
+
+function renderActionButton(kind, label, active, enabled, dataset) {
+  const activeClass = active ? "active" : "";
+  const disabledAttribute = enabled ? "" : "disabled";
+  const dataAttributes = Object.entries(dataset)
+    .map(([key, value]) => `data-${toKebabCase(key)}="${escapeHtmlAttribute(String(value))}"`)
+    .join(" ");
+
+  return `
+    <button class="admin-action-button ${activeClass}" type="button" ${dataAttributes} ${disabledAttribute}>
+      ${label}
+    </button>
+  `;
+}
+
+function renderPermissionPill(label, enabled) {
+  const className = enabled ? "status-approved" : "status-paused";
+  const text = enabled ? label : `بدون ${label}`;
+  return `<span class="admin-status-chip ${className}">${escapeHtml(text)}</span>`;
+}
+
+function getPermissionSummary(admin) {
+  const permissions = [];
+
+  if (admin.canManageAdmins) {
+    permissions.push("إضافة مديرين وتحديد صلاحياتهم");
+  }
+
+  if (admin.canManageCouriers) {
+    permissions.push("تحديث حالات المندوبين");
+  }
+
+  if (admin.canViewCourierDocuments) {
+    permissions.push("عرض مستندات المندوبين");
+  }
+
+  if (admin.canManageListings) {
+    permissions.push("إدارة الإعلانات والتمييز الذهبي");
+  }
+
+  if (admin.canBanMembers) {
+    permissions.push("حظر المستخدمين وفك الحظر");
+  }
+
+  return permissions.length
+    ? `صلاحياتك الحالية: ${permissions.join("، ")}.`
+    : "لا توجد صلاحيات إدارية مفعلة لهذا الحساب.";
+}
+
+function getCourierStatusClass(status) {
+  const classMap = {
+    pending: "status-pending",
+    approved: "status-approved",
+    paused: "status-paused",
+  };
+
+  return classMap[status] || "status-pending";
+}
+
+function getAuthHeaders() {
+  return state.token ? { Authorization: `Bearer ${state.token}` } : {};
+}
+
+function clearSession() {
+  state.token = "";
+  state.admin = null;
+  state.couriers = [];
+  state.listings = [];
+  state.members = [];
+  state.managers = [];
+  state.stats = {
+    pendingCouriers: 0,
+    approvedCouriers: 0,
+    pausedCouriers: 0,
+    highlightedListings: 0,
+    bannedMembers: 0,
+    totalManagers: 0,
+  };
+  localStorage.removeItem(ADMIN_TOKEN_KEY);
+}
+
+async function apiRequest(url, options = {}) {
+  const headers = {
+    "X-Admin-Panel-Path": ADMIN_PANEL_ACCESS_PATH,
+    ...(options.headers || {}),
+  };
+
+  if (!(options.body instanceof FormData) && !headers["Content-Type"]) {
+    headers["Content-Type"] = "application/json";
+  }
+
+  const response = await fetch(url, {
+    ...options,
+    headers,
+  });
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(data.error || "حدث خطأ غير متوقع.");
+  }
+
+  return data;
+}
+
+function toKebabCase(value) {
+  return String(value).replace(/[A-Z]/g, (character) => `-${character.toLowerCase()}`);
+}
+
+function formatNumber(value) {
+  return new Intl.NumberFormat("ar-SY").format(Number(value || 0));
+}
+
+function formatCurrency(value) {
+  return `${formatNumber(value)} ل.س`;
+}
+
+function formatDate(value) {
+  return new Intl.DateTimeFormat("ar-SY", { dateStyle: "medium" }).format(new Date(value));
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function escapeHtmlAttribute(value) {
+  return escapeHtml(value).replaceAll("`", "");
+}
+
+function normalizeAdminPanelPath(value) {
+  const rawPath = String(value || "").trim();
+
+  if (!rawPath) {
+    return "/";
+  }
+
+  return rawPath.replace(/\/+$/, "") || "/";
+}

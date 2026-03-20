@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: hoon-store
+    runtime: node
+    plan: starter
+    buildCommand: ""
+    startCommand: "node server.js"
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: ADMIN_PANEL_PATH
+        sync: false
+      - key: ADMIN_USERNAME
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: DATA_DIR
+        value: /opt/render/project_data/data
+      - key: UPLOADS_DIR
+        value: /opt/render/project_data/uploads
+      - key: DB_PATH
+        value: /opt/render/project_data/data/souq-syria.db
+    disk:
+      name: hoon-store-data
+      mountPath: /opt/render/project_data
+      sizeGB: 1

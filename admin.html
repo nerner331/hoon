@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f7f1e8">
+  <title>لوحة إدارة هون ستور</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;700;800&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="hero admin-hero">
+      <nav class="topbar">
+        <div class="top-actions">
+          <a class="nav-link" href="index.html">العودة إلى المنصة</a>
+          <a class="nav-link" href="#adminCouriers">طلبات المندوبين</a>
+          <a class="nav-link" href="#adminListingsSection">الإعلانات</a>
+          <a class="nav-link" href="#adminMembersSection">المستخدمون</a>
+          <a class="nav-link" href="#adminManagersSection">المديرون</a>
+        </div>
+
+        <div class="brand">
+          <img class="brand-logo" src="sh.png" alt="شعار هون ستور">
+          <div>
+            <p class="eyebrow">بوابة إدارة مستقلة</p>
+            <h1>إدارة هون ستور</h1>
+          </div>
+        </div>
+      </nav>
+
+      <section class="hero-content">
+        <div class="hero-copy">
+          <p class="section-tag">إدارة المندوبين والمديرين</p>
+          <h2>صفحة مخصصة لمراجعة الطلبات وإدارة الصلاحيات</h2>
+          <p class="hero-text">
+            من هذه الصفحة يمكن متابعة طلبات المندوبين، اعتماد الحسابات، وإضافة مديرين جدد
+            بصلاحيات مختلفة بحسب المهام المطلوبة.
+          </p>
+        </div>
+
+        <div class="hero-card">
+          <p class="card-label">الدخول الإداري</p>
+          <div class="database-status">
+            <strong>اسم المستخدم أو البريد الإلكتروني</strong>
+            <p>تسجيل الدخول للإدارة يدعم اسم المستخدم أو البريد الإلكتروني مع كلمة المرور.</p>
+          </div>
+
+          <div class="quick-tags">
+            <span>إدارة الطلبات</span>
+            <span>إضافة مديرين</span>
+            <span>صلاحيات متفاوتة</span>
+          </div>
+
+          <p class="hero-note">استخدم هذه الصفحة للمراجعة الداخلية فقط.</p>
+        </div>
+      </section>
+    </header>
+
+    <main>
+      <section class="admin-panel">
+        <div class="section-heading">
+          <p class="section-tag">لوحة الإدارة</p>
+          <h2>طلبات المندوبين والمديرون</h2>
+        </div>
+
+        <div class="admin-layout">
+          <div id="adminLoginShell" class="admin-login-card">
+            <h3>تسجيل دخول الإدارة</h3>
+            <p class="admin-lead">أدخل اسم المستخدم أو البريد الإلكتروني ثم كلمة المرور للدخول إلى لوحة الإدارة.</p>
+            <form id="adminLoginForm" class="admin-form">
+              <label>
+                اسم المستخدم أو البريد الإلكتروني
+                <input name="identifier" type="text" placeholder="souq-admin أو admin@example.com" required>
+              </label>
+              <label>
+                كلمة المرور
+                <input name="password" type="password" placeholder="أدخل كلمة المرور" required>
+              </label>
+              <button class="primary-button submit-button" type="submit">تسجيل دخول الإدارة</button>
+            </form>
+            <p id="adminMessage" class="form-message"></p>
+          </div>
+
+          <div id="adminDashboard" class="admin-dashboard hidden">
+            <div class="database-banner">
+              <div>
+                <p class="section-tag">لوحة التحكم</p>
+                <h3 id="adminWelcomeTitle">متابعة الطلبات الحالية</h3>
+              </div>
+              <button id="adminLogoutButton" class="ghost-button logout-button" type="button">تسجيل خروج الإدارة</button>
+            </div>
+
+            <p id="adminSummaryNote" class="account-summary-note">يمكنك تحديث حالات المندوبين وإضافة مديرين جدد من هذه اللوحة.</p>
+
+            <div class="admin-stats-grid">
+              <article class="admin-stat-card">
+                <strong id="adminPendingCount">0</strong>
+                <span>قيد المراجعة</span>
+              </article>
+              <article class="admin-stat-card">
+                <strong id="adminApprovedCount">0</strong>
+                <span>جاهز للعمل</span>
+              </article>
+              <article class="admin-stat-card">
+                <strong id="adminPausedCount">0</strong>
+                <span>موقوف مؤقتًا</span>
+              </article>
+              <article class="admin-stat-card">
+                <strong id="adminGoldCount">0</strong>
+                <span>إعلانات بإطار ذهبي</span>
+              </article>
+              <article class="admin-stat-card">
+                <strong id="adminBannedMembersCount">0</strong>
+                <span>مستخدمون محظورون</span>
+              </article>
+              <article class="admin-stat-card">
+                <strong id="adminManagersCount">0</strong>
+                <span>حسابات إدارية</span>
+              </article>
+            </div>
+
+            <div class="admin-page-grid">
+              <section class="admin-block" id="adminCouriers">
+                <div class="section-heading section-heading-compact">
+                  <p class="section-tag">طلبات المندوبين</p>
+                  <h3>مراجعة المستندات والحالات</h3>
+                </div>
+                <div id="adminCourierList" class="admin-courier-list"></div>
+              </section>
+
+              <section class="admin-block" id="adminListingsSection">
+                <div class="section-heading section-heading-compact">
+                  <p class="section-tag">الإعلانات</p>
+                  <h3>تمييز الإعلان وحذف الصورة أو الإعلان</h3>
+                </div>
+                <p id="adminListingsNote" class="account-summary-note">يمكن للمديرين المخولين تمييز الإعلانات بإطار ذهبي أو حذف الصورة أو إزالة الإعلان.</p>
+                <div id="adminListingsList" class="admin-listing-list"></div>
+              </section>
+
+              <section class="admin-block" id="adminMembersSection">
+                <div class="section-heading section-heading-compact">
+                  <p class="section-tag">المستخدمون</p>
+                  <h3>حظر المستخدمين أو فك الحظر</h3>
+                </div>
+                <p id="adminMembersNote" class="account-summary-note">يمكن من هنا حظر المستخدم ومنعه من تسجيل الدخول أو النشر داخل المنصة.</p>
+                <div id="adminMembersList" class="admin-member-list"></div>
+              </section>
+
+              <section class="admin-block" id="adminManagersSection">
+                <div class="section-heading section-heading-compact">
+                  <p class="section-tag">المديرون</p>
+                  <h3>إضافة مديرين بصلاحيات متفاوتة</h3>
+                </div>
+
+                <p id="adminPermissionNote" class="account-summary-note">صلاحياتك الحالية ستحدد ما إذا كان بإمكانك إضافة مديرين جدد أو فقط عرضهم.</p>
+
+                <div id="managerFormShell" class="admin-manager-form-shell">
+                  <form id="managerForm" class="admin-form">
+                    <label>
+                      الاسم الكامل
+                      <input name="fullName" type="text" placeholder="مثال: محمد الصالح" required>
+                    </label>
+                    <label>
+                      اسم المستخدم
+                      <input name="username" type="text" placeholder="manager.user" required>
+                    </label>
+                    <label>
+                      البريد الإلكتروني
+                      <input name="email" type="email" placeholder="manager@example.com" required>
+                    </label>
+                    <label>
+                      المسمى الوظيفي
+                      <input name="roleLabel" type="text" placeholder="مثال: مدير مراجعة">
+                    </label>
+                    <label>
+                      كلمة المرور
+                      <input name="password" type="password" placeholder="6 أحرف على الأقل" required>
+                    </label>
+
+                    <div class="permission-grid">
+                      <label class="checkbox-row">
+                        <input name="canManageAdmins" type="checkbox">
+                        <span>إدارة المديرين والصلاحيات</span>
+                      </label>
+                      <label class="checkbox-row">
+                        <input name="canManageCouriers" type="checkbox" checked>
+                        <span>تحديث حالات المندوبين</span>
+                      </label>
+                      <label class="checkbox-row">
+                        <input name="canViewCourierDocuments" type="checkbox" checked>
+                        <span>عرض مستندات المندوبين</span>
+                      </label>
+                      <label class="checkbox-row">
+                        <input name="canManageListings" type="checkbox" checked>
+                        <span>إدارة الإعلانات والصور</span>
+                      </label>
+                      <label class="checkbox-row">
+                        <input name="canBanMembers" type="checkbox" checked>
+                        <span>حظر المستخدمين</span>
+                      </label>
+                    </div>
+
+                    <button class="primary-button submit-button" type="submit">إضافة مدير جديد</button>
+                  </form>
+                  <p id="managerMessage" class="form-message"></p>
+                </div>
+
+                <div id="adminManagersList" class="admin-manager-list"></div>
+              </section>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="admin.js"></script>
+</body>
+</html>
