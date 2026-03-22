@@ -19,107 +19,23 @@ const PAGE_URLS = {
   classifieds: "classifieds.html",
   courier: "courier.html",
 };
-const SYRIAN_CITIES = Object.freeze([
-  "دمشق",
-  "ريف دمشق",
-  "دوما",
-  "حرستا",
-  "جرمانا",
-  "داريا",
-  "المعضمية",
-  "صحنايا",
-  "قدسيا",
-  "التل",
-  "النبك",
-  "يبرود",
-  "الزبداني",
-  "قطنا",
-  "الكسوة",
-  "سقبا",
-  "عربين",
-  "زملكا",
-  "كفر بطنا",
-  "حلب",
-  "منبج",
-  "الباب",
-  "إعزاز",
-  "عفرين",
-  "جرابلس",
-  "السفيرة",
-  "الأتارب",
-  "دير حافر",
-  "تل رفعت",
-  "مارع",
-  "حمص",
-  "تدمر",
-  "الرستن",
-  "تلبيسة",
-  "القصير",
-  "تلكلخ",
-  "القريتين",
-  "الحولة",
-  "المخرم",
-  "حماة",
-  "سلمية",
-  "مصياف",
-  "محردة",
-  "السقيلبية",
-  "صوران",
-  "كفرزيتا",
-  "طيبة الإمام",
-  "اللاذقية",
-  "جبلة",
-  "القرداحة",
-  "الحفة",
-  "كسب",
-  "طرطوس",
-  "بانياس",
-  "صافيتا",
-  "الدريكيش",
-  "الشيخ بدر",
-  "إدلب",
-  "معرة النعمان",
-  "أريحا",
-  "جسر الشغور",
-  "سراقب",
-  "خان شيخون",
-  "بنش",
-  "الدانا",
-  "حارم",
-  "درعا",
-  "إزرع",
-  "الصنمين",
-  "نوى",
-  "جاسم",
-  "بصرى الشام",
-  "داعل",
-  "الحراك",
-  "طفس",
-  "السويداء",
-  "شهبا",
-  "صلخد",
-  "عريقة",
-  "دير الزور",
-  "الميادين",
-  "البوكمال",
-  "العشارة",
-  "الرقة",
-  "الطبقة",
-  "تل أبيض",
-  "عين عيسى",
-  "الحسكة",
-  "القامشلي",
-  "رأس العين",
-  "المالكية",
-  "عامودا",
-  "الدرباسية",
-  "الشدادي",
-  "تل تمر",
-  "القنيطرة",
-  "خان أرنبة",
-  "مدينة البعث",
-  "حضر",
-]);
+const SYRIAN_GOVERNORATE_CITY_MAP = Object.freeze({
+  "دمشق": ["دمشق"],
+  "ريف دمشق": ["ريف دمشق", "دوما", "حرستا", "جرمانا", "داريا", "المعضمية", "صحنايا", "قدسيا", "التل", "النبك", "يبرود", "الزبداني", "قطنا", "الكسوة", "سقبا", "عربين", "زملكا", "كفر بطنا"],
+  "حلب": ["حلب", "منبج", "الباب", "إعزاز", "عفرين", "جرابلس", "السفيرة", "الأتارب", "دير حافر", "تل رفعت", "مارع"],
+  "حمص": ["حمص", "تدمر", "الرستن", "تلبيسة", "القصير", "تلكلخ", "القريتين", "الحولة", "المخرم"],
+  "حماة": ["حماة", "سلمية", "مصياف", "محردة", "السقيلبية", "صوران", "كفرزيتا", "طيبة الإمام"],
+  "اللاذقية": ["اللاذقية", "جبلة", "القرداحة", "الحفة", "كسب"],
+  "طرطوس": ["طرطوس", "بانياس", "صافيتا", "الدريكيش", "الشيخ بدر"],
+  "إدلب": ["إدلب", "معرة النعمان", "أريحا", "جسر الشغور", "سراقب", "خان شيخون", "بنش", "الدانا", "حارم"],
+  "درعا": ["درعا", "إزرع", "الصنمين", "نوى", "جاسم", "بصرى الشام", "داعل", "الحراك", "طفس"],
+  "السويداء": ["السويداء", "شهبا", "صلخد", "عريقة"],
+  "دير الزور": ["دير الزور", "الميادين", "البوكمال", "العشارة"],
+  "الرقة": ["الرقة", "الطبقة", "تل أبيض", "عين عيسى"],
+  "الحسكة": ["الحسكة", "القامشلي", "رأس العين", "المالكية", "عامودا", "الدرباسية", "الشدادي", "تل تمر"],
+  "القنيطرة": ["القنيطرة", "خان أرنبة", "مدينة البعث", "حضر"],
+});
+const SYRIAN_GOVERNORATES = Object.freeze(Object.keys(SYRIAN_GOVERNORATE_CITY_MAP));
 
 const storedSession = getStoredSession();
 
@@ -2181,7 +2097,7 @@ function getFilteredListings() {
 
   return state.listings.filter((listing) => {
     const matchesCategory = state.currentCategory === "الكل" || listing.category === state.currentCategory;
-    const matchesCity = state.currentCity === "all" || listing.city === state.currentCity;
+    const matchesCity = state.currentCity === "all" || getGovernorateForLocation(listing.city) === state.currentCity;
     const matchesQuery = !normalizedQuery || [
       listing.title,
       listing.description,
@@ -2219,6 +2135,32 @@ function getCurrentCategoryLabel() {
   return state.currentCategory === "الكل" ? "كل التصنيفات" : state.currentCategory;
 }
 
+function getGovernorateForLocation(location) {
+  const normalizedLocation = String(location || "").trim();
+
+  if (!normalizedLocation) {
+    return "";
+  }
+
+  for (const [governorate, cities] of Object.entries(SYRIAN_GOVERNORATE_CITY_MAP)) {
+    if (normalizedLocation === governorate) {
+      return governorate;
+    }
+
+    if (cities.some((city) => normalizedLocation === city)) {
+      return governorate;
+    }
+  }
+
+  for (const [governorate, cities] of Object.entries(SYRIAN_GOVERNORATE_CITY_MAP)) {
+    if (cities.some((city) => normalizedLocation.includes(city))) {
+      return governorate;
+    }
+  }
+
+  return "";
+}
+
 function syncCategoryState() {
   categoryButtons.forEach((button) => {
     button.classList.toggle("active", button.dataset.category === state.currentCategory);
@@ -2229,23 +2171,18 @@ function syncCategoryState() {
   }
 }
 
-function getUniqueListingCities() {
-  return [...new Set([
-    ...SYRIAN_CITIES,
-    ...state.listings
-      .map((listing) => String(listing.city || "").trim())
-      .filter(Boolean),
-  ])].sort((left, right) => left.localeCompare(right, "ar"));
+function getAvailableListingGovernorates() {
+  return [...SYRIAN_GOVERNORATES];
 }
 
 function syncListingToolbarState() {
   if (listingCityFilter) {
-    const cities = getUniqueListingCities();
+    const cities = getAvailableListingGovernorates();
     const currentOptions = Array.from(listingCityFilter.options).map((option) => option.value);
 
     if (cities.length + 1 !== currentOptions.length || cities.some((city) => !currentOptions.includes(city))) {
       listingCityFilter.innerHTML = [
-        '<option value="all">كل المدن</option>',
+        '<option value="all">كل المحافظات</option>',
         ...cities.map((city) => `<option value="${escapeHtmlAttribute(city)}">${escapeHtml(city)}</option>`),
       ].join("");
     }
@@ -2272,7 +2209,7 @@ function updateListingResultsLabel(filteredListings) {
   }
 
   const categoryLabel = getCurrentCategoryLabel();
-  const cityLabel = state.currentCity === "all" ? "كل المدن" : state.currentCity;
+  const cityLabel = state.currentCity === "all" ? "كل المحافظات" : state.currentCity;
   const resultCount = formatNumber(filteredListings.length);
 
   listingResultsLabel.textContent = `يعرض الآن ${resultCount} إعلان ضمن ${categoryLabel} في ${cityLabel}.`;
