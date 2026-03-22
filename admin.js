@@ -127,10 +127,10 @@ function renderState() {
     adminMembersList.innerHTML = `<div class="admin-empty">سجّل دخول الإدارة لعرض حسابات المستخدمين.</div>`;
     adminManagersList.innerHTML = `<div class="admin-empty">سجّل دخول الإدارة لعرض حسابات المديرين.</div>`;
     managerFormShell.classList.add("hidden");
-    adminListingsNote.textContent = "سجّل دخول الإدارة لمراجعة الإعلانات واتخاذ الإجراءات المناسبة.";
-    adminClassifiedsNote.textContent = "سجّل دخول الإدارة لمراجعة الإعلانات المبوبة واعتمادها أو إغلاقها.";
-    adminMembersNote.textContent = "سجّل دخول الإدارة لمراجعة حسابات المستخدمين وإدارة الحظر.";
-    adminPermissionNote.textContent = "صلاحيات هذا الحساب تظهر بعد تسجيل الدخول.";
+    adminListingsNote.textContent = "سجّل دخول الإدارة.";
+    adminClassifiedsNote.textContent = "سجّل دخول الإدارة.";
+    adminMembersNote.textContent = "سجّل دخول الإدارة.";
+    adminPermissionNote.textContent = "تظهر الصلاحيات بعد الدخول.";
     return;
   }
 
@@ -139,7 +139,7 @@ function renderState() {
 
 function renderDashboard() {
   adminWelcomeTitle.textContent = `${state.admin.roleLabel} - ${state.admin.fullName}`;
-  adminSummaryNote.textContent = `تسجيل الدخول الحالي باسم ${state.admin.username}. يمكنك استخدام اسم المستخدم أو البريد الإلكتروني للدخول إلى الإدارة.`;
+  adminSummaryNote.textContent = `دخول باسم ${state.admin.username}.`;
   adminPendingCount.textContent = formatNumber(state.stats.pendingCouriers);
   adminApprovedCount.textContent = formatNumber(state.stats.approvedCouriers);
   adminPausedCount.textContent = formatNumber(state.stats.pausedCouriers);
@@ -152,20 +152,20 @@ function renderDashboard() {
 
   managerFormShell.classList.toggle("hidden", !state.admin.canManageAdmins);
   adminListingsNote.textContent = state.admin.canManageListings || state.admin.canManageAdmins
-    ? "يمكنك تمييز الإعلان بإطار ذهبي أو حذف الصورة أو حذف الإعلان."
+    ? "إدارة الإعلانات."
     : state.admin.canBanMembers
-      ? "يمكنك من هذا القسم الوصول السريع إلى حظر صاحب الإعلان."
+      ? "حظر أصحاب الإعلانات."
       : "لا تملك صلاحية لإدارة الإعلانات.";
   if (state.admin.canManageListings || state.admin.canManageAdmins) {
-    adminListingsNote.textContent = `يمكنك اعتماد الإعلانات وتمييزها وحذف صورها أو حذفها بالكامل. الإعلانات المعلقة حاليًا: ${formatNumber(state.stats.pendingListings || 0)}.`;
+    adminListingsNote.textContent = `المعلقة: ${formatNumber(state.stats.pendingListings || 0)}.`;
   }
 
   adminClassifiedsNote.textContent = state.admin.canManageListings || state.admin.canManageAdmins
-    ? `يمكنك اعتماد الإعلانات المبوبة وفتحها أو إغلاقها. الطلبات المعلقة حاليًا: ${formatNumber(state.stats.pendingClassifieds || 0)}.`
+    ? `المعلقة: ${formatNumber(state.stats.pendingClassifieds || 0)}.`
     : "لا تملك صلاحية لإدارة الإعلانات المبوبة.";
 
   adminMembersNote.textContent = state.admin.canBanMembers || state.admin.canManageAdmins
-    ? "يمكنك من هنا حظر المستخدمين ومنعهم من تسجيل الدخول أو النشر داخل المنصة."
+    ? "إدارة المستخدمين."
     : "لا تملك صلاحية لإدارة المستخدمين.";
 
   renderCouriers();
