@@ -19,6 +19,107 @@ const PAGE_URLS = {
   classifieds: "classifieds.html",
   courier: "courier.html",
 };
+const SYRIAN_CITIES = Object.freeze([
+  "دمشق",
+  "ريف دمشق",
+  "دوما",
+  "حرستا",
+  "جرمانا",
+  "داريا",
+  "المعضمية",
+  "صحنايا",
+  "قدسيا",
+  "التل",
+  "النبك",
+  "يبرود",
+  "الزبداني",
+  "قطنا",
+  "الكسوة",
+  "سقبا",
+  "عربين",
+  "زملكا",
+  "كفر بطنا",
+  "حلب",
+  "منبج",
+  "الباب",
+  "إعزاز",
+  "عفرين",
+  "جرابلس",
+  "السفيرة",
+  "الأتارب",
+  "دير حافر",
+  "تل رفعت",
+  "مارع",
+  "حمص",
+  "تدمر",
+  "الرستن",
+  "تلبيسة",
+  "القصير",
+  "تلكلخ",
+  "القريتين",
+  "الحولة",
+  "المخرم",
+  "حماة",
+  "سلمية",
+  "مصياف",
+  "محردة",
+  "السقيلبية",
+  "صوران",
+  "كفرزيتا",
+  "طيبة الإمام",
+  "اللاذقية",
+  "جبلة",
+  "القرداحة",
+  "الحفة",
+  "كسب",
+  "طرطوس",
+  "بانياس",
+  "صافيتا",
+  "الدريكيش",
+  "الشيخ بدر",
+  "إدلب",
+  "معرة النعمان",
+  "أريحا",
+  "جسر الشغور",
+  "سراقب",
+  "خان شيخون",
+  "بنش",
+  "الدانا",
+  "حارم",
+  "درعا",
+  "إزرع",
+  "الصنمين",
+  "نوى",
+  "جاسم",
+  "بصرى الشام",
+  "داعل",
+  "الحراك",
+  "طفس",
+  "السويداء",
+  "شهبا",
+  "صلخد",
+  "عريقة",
+  "دير الزور",
+  "الميادين",
+  "البوكمال",
+  "العشارة",
+  "الرقة",
+  "الطبقة",
+  "تل أبيض",
+  "عين عيسى",
+  "الحسكة",
+  "القامشلي",
+  "رأس العين",
+  "المالكية",
+  "عامودا",
+  "الدرباسية",
+  "الشدادي",
+  "تل تمر",
+  "القنيطرة",
+  "خان أرنبة",
+  "مدينة البعث",
+  "حضر",
+]);
 
 const storedSession = getStoredSession();
 
@@ -27,6 +128,8 @@ const state = {
   token: storedSession?.token || "",
   currentAuthPanel: "register",
   currentCategory: "الكل",
+  currentCity: "all",
+  listingSort: "newest",
   query: "",
   listings: [],
   classifieds: [],
@@ -65,6 +168,10 @@ const classifiedGrid = document.querySelector("#classifiedGrid");
 const classifiedEmpty = document.querySelector("#classifiedEmpty");
 const searchInput = document.querySelector("#searchInput");
 const searchButton = document.querySelector("#searchButton");
+const listingCityFilter = document.querySelector("#listingCityFilter");
+const listingSortSelect = document.querySelector("#listingSortSelect");
+const listingResetFilters = document.querySelector("#listingResetFilters");
+const listingResultsLabel = document.querySelector("#listingResultsLabel");
 const classifiedSearchInput = document.querySelector("#classifiedSearchInput");
 const classifiedSearchButton = document.querySelector("#classifiedSearchButton");
 const authMessage = document.querySelector("#authMessage");
@@ -115,6 +222,9 @@ const logoutButton = document.querySelector("#logoutButton");
 const authTabs = document.querySelectorAll(".auth-tab");
 const authJumpButtons = document.querySelectorAll("[data-auth-target]");
 const categoryButtons = document.querySelectorAll(".category-pill");
+const categoryTabShell = document.querySelector("#categoryTabShell");
+const activeCategoryLabel = document.querySelector("#activeCategoryLabel");
+const quickCityButtons = document.querySelectorAll(".tag-btn[data-city]");
 const classifiedTypeButtons = document.querySelectorAll(".classified-type-pill");
 
 bootstrap();
@@ -149,10 +259,24 @@ function bindEvents() {
 
   categoryButtons.forEach((button) => {
     button.addEventListener("click", () => {
-      categoryButtons.forEach((item) => item.classList.remove("active"));
-      button.classList.add("active");
       state.currentCategory = button.dataset.category;
+      syncCategoryState();
+      if (categoryTabShell) {
+        categoryTabShell.open = false;
+      }
       renderListings();
+    });
+  });
+
+  quickCityButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      state.currentCity = button.dataset.city || "all";
+      if (listingCityFilter) {
+        listingCityFilter.value = state.currentCity;
+      }
+      syncListingToolbarState();
+      renderListings();
+      scrollToSelectorOrNavigate("#listings", `${getPageUrl("home")}#listings`);
     });
   });
 
@@ -177,6 +301,41 @@ function bindEvents() {
       state.query = searchInput?.value.trim() || "";
       renderListings();
       scrollToSelectorOrNavigate("#listings", `${getPageUrl("home")}#listings`);
+    });
+  }
+
+  if (listingCityFilter) {
+    listingCityFilter.addEventListener("change", () => {
+      state.currentCity = listingCityFilter.value || "all";
+      syncListingToolbarState();
+      renderListings();
+    });
+  }
+
+  if (listingSortSelect) {
+    listingSortSelect.addEventListener("change", () => {
+      state.listingSort = listingSortSelect.value || "newest";
+      renderListings();
+    });
+  }
+
+  if (listingResetFilters) {
+    listingResetFilters.addEventListener("click", () => {
+      state.query = "";
+      state.currentCategory = "الكل";
+      state.currentCity = "all";
+      state.listingSort = "newest";
+
+      if (searchInput) {
+        searchInput.value = "";
+      }
+
+      syncCategoryState();
+      if (categoryTabShell) {
+        categoryTabShell.open = false;
+      }
+      syncListingToolbarState();
+      renderListings();
     });
   }
 
@@ -2013,6 +2172,112 @@ function bindListingGalleryControls(rootElement) {
   });
 }
 
+function getListingPriority(listing) {
+  return (listing.isAdminHighlighted ? 2 : 0) + (listing.isFeatured ? 1 : 0);
+}
+
+function getFilteredListings() {
+  const normalizedQuery = state.query.trim().toLowerCase();
+
+  return state.listings.filter((listing) => {
+    const matchesCategory = state.currentCategory === "الكل" || listing.category === state.currentCategory;
+    const matchesCity = state.currentCity === "all" || listing.city === state.currentCity;
+    const matchesQuery = !normalizedQuery || [
+      listing.title,
+      listing.description,
+      listing.city,
+      listing.category,
+      listing.sellerName,
+    ].some((value) => String(value || "").toLowerCase().includes(normalizedQuery));
+
+    return matchesCategory && matchesCity && matchesQuery;
+  });
+}
+
+function sortListings(listings) {
+  return [...listings].sort((left, right) => {
+    if (state.listingSort === "price-asc") {
+      return Number(left.price || 0) - Number(right.price || 0);
+    }
+
+    if (state.listingSort === "price-desc") {
+      return Number(right.price || 0) - Number(left.price || 0);
+    }
+
+    if (state.listingSort === "highlighted") {
+      const priorityDifference = getListingPriority(right) - getListingPriority(left);
+      if (priorityDifference !== 0) {
+        return priorityDifference;
+      }
+    }
+
+    return new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime();
+  });
+}
+
+function getCurrentCategoryLabel() {
+  return state.currentCategory === "الكل" ? "كل التصنيفات" : state.currentCategory;
+}
+
+function syncCategoryState() {
+  categoryButtons.forEach((button) => {
+    button.classList.toggle("active", button.dataset.category === state.currentCategory);
+  });
+
+  if (activeCategoryLabel) {
+    activeCategoryLabel.textContent = getCurrentCategoryLabel();
+  }
+}
+
+function getUniqueListingCities() {
+  return [...new Set([
+    ...SYRIAN_CITIES,
+    ...state.listings
+      .map((listing) => String(listing.city || "").trim())
+      .filter(Boolean),
+  ])].sort((left, right) => left.localeCompare(right, "ar"));
+}
+
+function syncListingToolbarState() {
+  if (listingCityFilter) {
+    const cities = getUniqueListingCities();
+    const currentOptions = Array.from(listingCityFilter.options).map((option) => option.value);
+
+    if (cities.length + 1 !== currentOptions.length || cities.some((city) => !currentOptions.includes(city))) {
+      listingCityFilter.innerHTML = [
+        '<option value="all">كل المدن</option>',
+        ...cities.map((city) => `<option value="${escapeHtmlAttribute(city)}">${escapeHtml(city)}</option>`),
+      ].join("");
+    }
+
+    if (!cities.includes(state.currentCity) && state.currentCity !== "all") {
+      state.currentCity = "all";
+    }
+
+    listingCityFilter.value = state.currentCity;
+  }
+
+  if (listingSortSelect) {
+    listingSortSelect.value = state.listingSort;
+  }
+
+  quickCityButtons.forEach((button) => {
+    button.classList.toggle("active", (button.dataset.city || "") === state.currentCity);
+  });
+}
+
+function updateListingResultsLabel(filteredListings) {
+  if (!listingResultsLabel) {
+    return;
+  }
+
+  const categoryLabel = getCurrentCategoryLabel();
+  const cityLabel = state.currentCity === "all" ? "كل المدن" : state.currentCity;
+  const resultCount = formatNumber(filteredListings.length);
+
+  listingResultsLabel.textContent = `يعرض الآن ${resultCount} إعلان ضمن ${categoryLabel} في ${cityLabel}.`;
+}
+
 function renderFeatured() {
   if (!featuredGrid) {
     return;
@@ -2021,8 +2286,8 @@ function renderFeatured() {
   const featuredListings = [...state.listings]
     .filter((listing) => listing.isAdminHighlighted || listing.isFeatured)
     .sort((left, right) => {
-      const leftPriority = (left.isAdminHighlighted ? 2 : 0) + (left.isFeatured ? 1 : 0);
-      const rightPriority = (right.isAdminHighlighted ? 2 : 0) + (right.isFeatured ? 1 : 0);
+      const leftPriority = getListingPriority(left);
+      const rightPriority = getListingPriority(right);
 
       if (rightPriority !== leftPriority) {
         return rightPriority - leftPriority;
@@ -2039,16 +2304,19 @@ function renderFeatured() {
   featuredGrid.innerHTML = featuredListings.slice(0, 3).map((listing, index) => `
     <article class="featured-card ${listing.isAdminHighlighted ? "gold-card" : index === 0 ? "premium" : ""}">
       ${renderListingMedia(listing, { featured: true })}
-      <div class="featured-tags">
-        ${listing.isAdminHighlighted ? '<div class="featured-badge gold-badge">إعلان ذهبي</div>' : ""}
-        ${listing.isFeatured ? `<div class="featured-badge ${listing.isAdminHighlighted ? "featured-badge-soft" : ""}">${index === 0 && !listing.isAdminHighlighted ? "مميز ومدفوع" : "إعلان مميز"}</div>` : ""}
+      <div class="featured-signal-row">
+        <span class="featured-price">${formatCurrency(listing.price)}</span>
+        <div class="featured-tags">
+          ${listing.isAdminHighlighted ? '<div class="featured-badge gold-badge">إعلان ذهبي</div>' : ""}
+          ${listing.isFeatured ? `<div class="featured-badge ${listing.isAdminHighlighted ? "featured-badge-soft" : ""}">${index === 0 && !listing.isAdminHighlighted ? "مميز ومدفوع" : "إعلان مميز"}</div>` : ""}
+        </div>
       </div>
       <h3>${escapeHtml(listing.title)}</h3>
       <p>${escapeHtml(listing.description)}</p>
       <div class="featured-meta">
         <span>${escapeHtml(listing.category)}</span>
         <span>${escapeHtml(listing.city)}</span>
-        <span>${formatCurrency(listing.price)}</span>
+        <span>${escapeHtml(listing.sellerName)}</span>
       </div>
       <a class="${index === 0 ? "primary-button" : "secondary-button"} listing-contact-link" href="${escapeHtmlAttribute(getPlatformContactUrl(listing))}" target="_blank" rel="noopener noreferrer">
         اطلب التواصل عبر الإدارة
@@ -2064,35 +2332,34 @@ function renderListings() {
     return;
   }
 
-  const filteredListings = state.listings.filter((listing) => {
-    const matchesCategory = state.currentCategory === "الكل" || listing.category === state.currentCategory;
-    const normalizedQuery = state.query.toLowerCase();
-    const matchesQuery = !normalizedQuery || [
-      listing.title,
-      listing.description,
-      listing.city,
-      listing.category,
-      listing.sellerName,
-    ].some((value) => String(value).toLowerCase().includes(normalizedQuery));
+  syncCategoryState();
+  syncListingToolbarState();
 
-    return matchesCategory && matchesQuery;
-  });
+  const filteredListings = sortListings(getFilteredListings());
 
   listingEmpty.classList.toggle("hidden", filteredListings.length > 0);
+  updateListingResultsLabel(filteredListings);
 
   listingsGrid.innerHTML = filteredListings.map((listing, index) => `
     <article class="product-card ${getListingTileClass(index, listing)}">
       ${renderListingMedia(listing)}
       <div class="product-content">
-        <div class="listing-row">
-          <h3>${escapeHtml(listing.title)}</h3>
+        <div class="product-signal-row">
           <span class="price">${formatCurrency(listing.price)}</span>
+          <div class="product-badge-row">
+            ${listing.isAdminHighlighted ? '<span class="gold-frame-badge">إطار ذهبي</span>' : ""}
+            ${listing.isFeatured ? '<span class="featured-badge featured-badge-soft">مميز</span>' : ""}
+            <span class="category-badge">${escapeHtml(listing.category)}</span>
+          </div>
         </div>
-        ${listing.isAdminHighlighted ? '<span class="gold-frame-badge">إطار ذهبي</span>' : ""}
-        <span class="category-badge">${escapeHtml(listing.category)}</span>
+        <h3>${escapeHtml(listing.title)}</h3>
+        <div class="product-meta-chips">
+          <span class="product-meta-chip">${escapeHtml(listing.city)}</span>
+          <span class="product-meta-chip">${escapeHtml(listing.sellerName)}</span>
+          <span class="product-meta-chip">نشر ${formatDate(listing.createdAt)}</span>
+        </div>
         <p>${escapeHtml(listing.description)}</p>
         <div class="product-footer">
-          <span>${escapeHtml(listing.city)} | ${escapeHtml(listing.sellerName)}</span>
           <div class="product-actions">
             ${renderFavoriteButton(listing)}
             <a class="listing-contact-link" href="${escapeHtmlAttribute(getPlatformContactUrl(listing))}" target="_blank" rel="noopener noreferrer">اطلب التواصل عبر الإدارة</a>
