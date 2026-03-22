@@ -6,6 +6,7 @@ const state = {
   admin: null,
   couriers: [],
   listings: [],
+  classifieds: [],
   members: [],
   managers: [],
   stats: {
@@ -14,6 +15,8 @@ const state = {
     pausedCouriers: 0,
     pendingListings: 0,
     highlightedListings: 0,
+    pendingClassifieds: 0,
+    openClassifieds: 0,
     bannedMembers: 0,
     totalManagers: 0,
   },
@@ -30,13 +33,17 @@ const adminPendingCount = document.querySelector("#adminPendingCount");
 const adminApprovedCount = document.querySelector("#adminApprovedCount");
 const adminPausedCount = document.querySelector("#adminPausedCount");
 const adminGoldCount = document.querySelector("#adminGoldCount");
+const adminPendingClassifiedsCount = document.querySelector("#adminPendingClassifiedsCount");
+const adminOpenClassifiedsCount = document.querySelector("#adminOpenClassifiedsCount");
 const adminBannedMembersCount = document.querySelector("#adminBannedMembersCount");
 const adminManagersCount = document.querySelector("#adminManagersCount");
 const adminCourierList = document.querySelector("#adminCourierList");
 const adminListingsList = document.querySelector("#adminListingsList");
+const adminClassifiedsList = document.querySelector("#adminClassifiedsList");
 const adminMembersList = document.querySelector("#adminMembersList");
 const adminManagersList = document.querySelector("#adminManagersList");
 const adminListingsNote = document.querySelector("#adminListingsNote");
+const adminClassifiedsNote = document.querySelector("#adminClassifiedsNote");
 const adminMembersNote = document.querySelector("#adminMembersNote");
 const adminPermissionNote = document.querySelector("#adminPermissionNote");
 const managerFormShell = document.querySelector("#managerFormShell");
@@ -90,6 +97,7 @@ function hydrateDashboard(response) {
   state.admin = response.admin || null;
   state.couriers = response.couriers || [];
   state.listings = response.listings || [];
+  state.classifieds = response.classifieds || [];
   state.members = response.members || [];
   state.managers = response.managers || [];
   state.stats = {
@@ -109,16 +117,20 @@ function renderState() {
     adminApprovedCount.textContent = "0";
     adminPausedCount.textContent = "0";
     adminGoldCount.textContent = "0";
+    adminPendingClassifiedsCount.textContent = "0";
+    adminOpenClassifiedsCount.textContent = "0";
     adminBannedMembersCount.textContent = "0";
     adminManagersCount.textContent = "0";
-    adminCourierList.innerHTML = `<div class="admin-empty">سجّل دخول الإدارة لعرض الطلبات.</div>`;
+    adminCourierList.innerHTML = `<div class="admin-empty">سجّل دخول الإدارة لعرض طلبات المندوبين.</div>`;
     adminListingsList.innerHTML = `<div class="admin-empty">سجّل دخول الإدارة لعرض الإعلانات.</div>`;
-    adminMembersList.innerHTML = `<div class="admin-empty">سجّل دخول الإدارة لعرض المستخدمين.</div>`;
-    adminManagersList.innerHTML = `<div class="admin-empty">سجّل دخول الإدارة لعرض المديرين.</div>`;
+    adminClassifiedsList.innerHTML = `<div class="admin-empty">سجّل دخول الإدارة لعرض الإعلانات المبوبة.</div>`;
+    adminMembersList.innerHTML = `<div class="admin-empty">سجّل دخول الإدارة لعرض حسابات المستخدمين.</div>`;
+    adminManagersList.innerHTML = `<div class="admin-empty">سجّل دخول الإدارة لعرض حسابات المديرين.</div>`;
     managerFormShell.classList.add("hidden");
-    adminListingsNote.textContent = "بعد تسجيل الدخول ستظهر هنا إجراءات الإعلانات حسب صلاحياتك.";
-    adminMembersNote.textContent = "بعد تسجيل الدخول ستظهر هنا إجراءات المستخدمين حسب صلاحياتك.";
-    adminPermissionNote.textContent = "تظهر هنا صلاحياتك الحالية بعد تسجيل الدخول.";
+    adminListingsNote.textContent = "سجّل دخول الإدارة لمراجعة الإعلانات واتخاذ الإجراءات المناسبة.";
+    adminClassifiedsNote.textContent = "سجّل دخول الإدارة لمراجعة الإعلانات المبوبة واعتمادها أو إغلاقها.";
+    adminMembersNote.textContent = "سجّل دخول الإدارة لمراجعة حسابات المستخدمين وإدارة الحظر.";
+    adminPermissionNote.textContent = "صلاحيات هذا الحساب تظهر بعد تسجيل الدخول.";
     return;
   }
 
@@ -132,6 +144,8 @@ function renderDashboard() {
   adminApprovedCount.textContent = formatNumber(state.stats.approvedCouriers);
   adminPausedCount.textContent = formatNumber(state.stats.pausedCouriers);
   adminGoldCount.textContent = formatNumber(state.stats.highlightedListings);
+  adminPendingClassifiedsCount.textContent = formatNumber(state.stats.pendingClassifieds || 0);
+  adminOpenClassifiedsCount.textContent = formatNumber(state.stats.openClassifieds || 0);
   adminBannedMembersCount.textContent = formatNumber(state.stats.bannedMembers);
   adminManagersCount.textContent = formatNumber(state.stats.totalManagers);
   adminPermissionNote.textContent = getPermissionSummary(state.admin);
@@ -143,15 +157,20 @@ function renderDashboard() {
       ? "يمكنك من هذا القسم الوصول السريع إلى حظر صاحب الإعلان."
       : "لا تملك صلاحية لإدارة الإعلانات.";
   if (state.admin.canManageListings || state.admin.canManageAdmins) {
-    adminListingsNote.textContent = `ÙŠÙ…ÙƒÙ†Ùƒ Ø§Ø¹ØªÙ…Ø§Ø¯ Ø§Ù„Ø¥Ø¹Ù„Ø§Ù† Ù„ÙŠØ¸Ù‡Ø± Ù„Ù„Ø²ÙˆØ§Ø±ØŒ ÙˆØ¹Ø¯Ø¯ Ø§Ù„Ø¥Ø¹Ù„Ø§Ù†Ø§Øª Ø§Ù„Ù…Ø¹Ù„Ù‚Ø© Ø­Ø§Ù„ÙŠÙ‹Ø§: ${formatNumber(state.stats.pendingListings || 0)}.`;
+    adminListingsNote.textContent = `يمكنك اعتماد الإعلانات وتمييزها وحذف صورها أو حذفها بالكامل. الإعلانات المعلقة حاليًا: ${formatNumber(state.stats.pendingListings || 0)}.`;
   }
 
+  adminClassifiedsNote.textContent = state.admin.canManageListings || state.admin.canManageAdmins
+    ? `يمكنك اعتماد الإعلانات المبوبة وفتحها أو إغلاقها. الطلبات المعلقة حاليًا: ${formatNumber(state.stats.pendingClassifieds || 0)}.`
+    : "لا تملك صلاحية لإدارة الإعلانات المبوبة.";
+
   adminMembersNote.textContent = state.admin.canBanMembers || state.admin.canManageAdmins
-    ? "يمكنك حظر المستخدم أو فك الحظر مباشرة من هذه القائمة."
-    : "لا تملك صلاحية لحظر المستخدمين.";
+    ? "يمكنك من هنا حظر المستخدمين ومنعهم من تسجيل الدخول أو النشر داخل المنصة."
+    : "لا تملك صلاحية لإدارة المستخدمين.";
 
   renderCouriers();
   renderListings();
+  renderClassifieds();
   renderMembers();
   renderManagers();
 }
@@ -240,7 +259,7 @@ function renderListings() {
       <p class="admin-listing-description">${escapeHtml(listing.description)}</p>
 
       <div class="admin-courier-actions">
-        ${renderActionButton("approve-listing", listing.isApproved ? "ØªÙ… Ø§Ù„Ø§Ø¹ØªÙ…Ø§Ø¯" : "Ø§Ø¹ØªÙ…Ø§Ø¯ Ø§Ù„Ø¥Ø¹Ù„Ø§Ù†", listing.isApproved, listing.canApprove, { listingId: listing.id, type: "listing-approve" })}
+        ${renderActionButton("approve-listing", listing.isApproved ? "تم الاعتماد" : "اعتماد الإعلان", listing.isApproved, listing.canApprove, { listingId: listing.id, type: "listing-approve" })}
         ${renderActionButton(listing.isAdminHighlighted ? "remove-gold" : "gold", listing.isAdminHighlighted ? "إزالة الإطار الذهبي" : "تمييز بإطار ذهبي", listing.isAdminHighlighted, listing.canManageListings, { listingId: listing.id, type: "listing-highlight", highlighted: listing.isAdminHighlighted ? "0" : "1" })}
         ${renderActionButton("remove-image", "حذف الصورة", false, listing.canManageListings && Boolean(listing.imageUrl), { listingId: listing.id, type: "listing-remove-image" })}
         ${renderActionButton("delete-listing", "حذف الإعلان", false, listing.canManageListings, { listingId: listing.id, type: "listing-delete" })}
@@ -265,6 +284,51 @@ function renderListingAdminMedia(listing) {
   `;
 }
 
+function renderClassifieds() {
+  if (!state.admin.canManageListings && !state.admin.canManageAdmins) {
+    adminClassifiedsList.innerHTML = `<div class="admin-empty">لا تملك صلاحية لإدارة الإعلانات المبوبة.</div>`;
+    return;
+  }
+
+  if (!state.classifieds.length) {
+    adminClassifiedsList.innerHTML = `<div class="admin-empty">لا توجد إعلانات مبوبة مسجلة حاليًا.</div>`;
+    return;
+  }
+
+  adminClassifiedsList.innerHTML = state.classifieds.map((classified) => `
+    <article class="admin-classified-card ${classified.isOpen ? "" : "admin-classified-card-closed"}">
+      <div class="admin-courier-head">
+        <div>
+          <h4>${escapeHtml(classified.title)}</h4>
+          <p>${escapeHtml(classified.memberName)} | ${escapeHtml(classified.city)} | ${escapeHtml(classified.category)}</p>
+        </div>
+        <div class="admin-manager-permissions">
+          <span class="admin-status-chip ${classified.isApproved ? "status-approved" : "status-pending"}">${escapeHtml(classified.approvalStatusLabel)}</span>
+          <span class="admin-status-chip ${classified.isOpen ? "status-approved" : "status-paused"}">${escapeHtml(classified.availabilityStatusLabel)}</span>
+          ${classified.memberIsBanned ? `<span class="admin-status-chip status-paused">صاحب الطلب محظور</span>` : ""}
+        </div>
+      </div>
+
+      <div class="admin-courier-meta">
+        <span class="admin-meta-pill">${escapeHtml(classified.adTypeLabel)}</span>
+        ${classified.compensation ? `<span class="admin-meta-pill">${escapeHtml(classified.compensation)}</span>` : ""}
+        <span class="admin-meta-pill">${formatDate(classified.createdAt)}</span>
+      </div>
+
+      <p class="admin-listing-description">${escapeHtml(classified.description)}</p>
+
+      <div class="admin-courier-actions">
+        ${renderActionButton("approve-classified", classified.isApproved ? "تم الاعتماد" : "اعتماد الإعلان", classified.isApproved, classified.canApprove, { classifiedId: classified.id, type: "classified-approve" })}
+        ${renderActionButton("open-classified", "فتح", classified.isOpen, classified.canManageClassifieds, { classifiedId: classified.id, type: "classified-status", availabilityStatus: "open" })}
+        ${renderActionButton("close-classified", "إغلاق", !classified.isOpen, classified.canManageClassifieds, { classifiedId: classified.id, type: "classified-status", availabilityStatus: "closed" })}
+        ${renderActionButton("delete-classified", "حذف", false, classified.canManageClassifieds, { classifiedId: classified.id, type: "classified-delete" })}
+        ${renderActionButton(classified.memberIsBanned ? "unban-member" : "ban-member", classified.memberIsBanned ? "فك حظر المستخدم" : "حظر المستخدم", classified.memberIsBanned, classified.canBanMember, { memberId: classified.memberId, type: "member-ban", banned: classified.memberIsBanned ? "0" : "1" })}
+      </div>
+    </article>
+  `).join("");
+
+  bindAdminActionButtons(adminClassifiedsList);
+}
 function renderMembers() {
   if (!state.admin.canBanMembers && !state.admin.canManageAdmins) {
     adminMembersList.innerHTML = `<div class="admin-empty">لا تملك صلاحية لإدارة المستخدمين.</div>`;
@@ -360,6 +424,24 @@ function bindAdminActionButtons(rootElement) {
   rootElement.querySelectorAll(".admin-action-button[data-type='member-ban']").forEach((button) => {
     button.addEventListener("click", async () => {
       await handleMemberBan(Number(button.dataset.memberId), button.dataset.banned === "1");
+    });
+  });
+
+  rootElement.querySelectorAll(".admin-action-button[data-type='classified-approve']").forEach((button) => {
+    button.addEventListener("click", async () => {
+      await handleClassifiedApproval(Number(button.dataset.classifiedId));
+    });
+  });
+
+  rootElement.querySelectorAll(".admin-action-button[data-type='classified-status']").forEach((button) => {
+    button.addEventListener("click", async () => {
+      await handleClassifiedStatusUpdate(Number(button.dataset.classifiedId), button.dataset.availabilityStatus);
+    });
+  });
+
+  rootElement.querySelectorAll(".admin-action-button[data-type='classified-delete']").forEach((button) => {
+    button.addEventListener("click", async () => {
+      await handleClassifiedDelete(Number(button.dataset.classifiedId));
     });
   });
 }
@@ -483,7 +565,7 @@ async function handleListingHighlight(listingId, highlighted) {
 
 async function handleListingApproval(listingId) {
   if (!state.admin?.canManageListings && !state.admin?.canManageAdmins) {
-    adminMessage.textContent = "Ù„ÙŠØ³ Ù„Ø¯ÙŠÙƒ ØµÙ„Ø§Ø­ÙŠØ© Ù„Ø§Ø¹ØªÙ…Ø§Ø¯ Ø§Ù„Ø¥Ø¹Ù„Ø§Ù†Ø§Øª.";
+    adminMessage.textContent = "ليس لديك صلاحية لاعتماد الإعلانات.";
     return;
   }
 
@@ -552,6 +634,78 @@ async function handleListingDelete(listingId) {
   }
 }
 
+async function handleClassifiedApproval(classifiedId) {
+  if (!state.admin?.canManageListings && !state.admin?.canManageAdmins) {
+    adminMessage.textContent = "ليس لديك صلاحية لاعتماد الإعلانات المبوبة.";
+    return;
+  }
+
+  try {
+    const response = await apiRequest(`/api/admin/classifieds/${classifiedId}/approve`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+    });
+
+    state.classifieds = response.classifieds || state.classifieds;
+    state.stats = {
+      ...state.stats,
+      ...(response.stats || {}),
+    };
+    adminMessage.textContent = response.message || "";
+    renderDashboard();
+  } catch (error) {
+    adminMessage.textContent = error.message;
+  }
+}
+
+async function handleClassifiedStatusUpdate(classifiedId, availabilityStatus) {
+  if (!state.admin?.canManageListings && !state.admin?.canManageAdmins) {
+    adminMessage.textContent = "ليس لديك صلاحية لتحديث حالة الإعلانات المبوبة.";
+    return;
+  }
+
+  try {
+    const response = await apiRequest(`/api/admin/classifieds/${classifiedId}/status`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ availabilityStatus }),
+    });
+
+    state.classifieds = response.classifieds || state.classifieds;
+    state.stats = {
+      ...state.stats,
+      ...(response.stats || {}),
+    };
+    adminMessage.textContent = response.message || "";
+    renderDashboard();
+  } catch (error) {
+    adminMessage.textContent = error.message;
+  }
+}
+
+async function handleClassifiedDelete(classifiedId) {
+  if (!state.admin?.canManageListings && !state.admin?.canManageAdmins) {
+    adminMessage.textContent = "ليس لديك صلاحية لحذف الإعلانات المبوبة.";
+    return;
+  }
+
+  try {
+    const response = await apiRequest(`/api/admin/classifieds/${classifiedId}`, {
+      method: "DELETE",
+      headers: getAuthHeaders(),
+    });
+
+    state.classifieds = response.classifieds || state.classifieds;
+    state.stats = {
+      ...state.stats,
+      ...(response.stats || {}),
+    };
+    adminMessage.textContent = response.message || "";
+    renderDashboard();
+  } catch (error) {
+    adminMessage.textContent = error.message;
+  }
+}
 async function handleMemberBan(memberId, banned) {
   if (!state.admin?.canBanMembers && !state.admin?.canManageAdmins) {
     adminMessage.textContent = "ليس لديك صلاحية لحظر المستخدمين.";
@@ -567,6 +721,7 @@ async function handleMemberBan(memberId, banned) {
 
     state.members = response.members || state.members;
     state.listings = response.listings || state.listings;
+    state.classifieds = response.classifieds || state.classifieds;
     state.stats = {
       ...state.stats,
       ...(response.stats || {}),
@@ -644,6 +799,7 @@ function clearSession() {
   state.admin = null;
   state.couriers = [];
   state.listings = [];
+  state.classifieds = [];
   state.members = [];
   state.managers = [];
   state.stats = {
@@ -652,6 +808,8 @@ function clearSession() {
     pausedCouriers: 0,
     pendingListings: 0,
     highlightedListings: 0,
+    pendingClassifieds: 0,
+    openClassifieds: 0,
     bannedMembers: 0,
     totalManagers: 0,
   };
@@ -719,4 +877,23 @@ function normalizeAdminPanelPath(value) {
   }
 
   return rawPath.replace(/\/+$/, "") || "/";
+}
+
+function renderListingAdminMedia(listing) {
+  const imageUrls = listing.imageUrls || (listing.imageUrl ? [listing.imageUrl] : []);
+
+  if (!imageUrls.length) {
+    return `<div class="admin-empty">لا توجد صور مرفقة لهذا الإعلان.</div>`;
+  }
+
+  return `
+    <div class="admin-media-grid">
+      ${imageUrls.map((imageUrl, index) => `
+        <a class="admin-media-link ${index === 0 ? "admin-media-link-wide" : ""}" href="${escapeHtmlAttribute(imageUrl)}" target="_blank" rel="noopener noreferrer">
+          <img src="${escapeHtmlAttribute(imageUrl)}" alt="صورة الإعلان ${index + 1} ${escapeHtmlAttribute(listing.title)}">
+          <p class="admin-media-caption">${index === 0 ? "الصورة الرئيسية" : `صورة إضافية ${index + 1}`}</p>
+        </a>
+      `).join("")}
+    </div>
+  `;
 }

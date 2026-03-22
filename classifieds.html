@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f7f1e8">
+  <title>الإعلانات المبوبة | هون ستور</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;700;800&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="classifieds">
+  <div class="page-shell">
+    <header class="hero">
+      <nav class="topbar">
+        <div class="top-actions">
+          <a class="nav-link" href="index.html">الرئيسية</a>
+          <a class="nav-link" href="account.html">الحساب</a>
+          <a class="nav-link" href="sell.html">بيع سلعة</a>
+          <a class="nav-link nav-link-strong" href="classifieds.html">الإعلانات المبوبة</a>
+          <a class="nav-link" href="courier.html">المندوبون</a>
+          <a class="nav-link" href="https://wa.me/963933001122" target="_blank" rel="noopener noreferrer">الدعم</a>
+        </div>
+
+        <div class="brand brand-stack">
+          <p class="eyebrow">هون ستور</p>
+          <img class="brand-logo" src="sh.png" alt="شعار هون ستور">
+        </div>
+      </nav>
+
+      <nav class="mobile-top-nav" aria-label="خيارات الجوال">
+        <a class="mobile-top-link" href="index.html">الرئيسية</a>
+        <a class="mobile-top-link" href="account.html">الحساب</a>
+        <a class="mobile-top-link" href="sell.html">بيع</a>
+        <a class="mobile-top-link mobile-top-link-strong" href="classifieds.html">المبوبة</a>
+        <a class="mobile-top-link" href="courier.html">مندوب</a>
+      </nav>
+
+      <section class="hero-content">
+        <div class="hero-copy">
+          <p class="section-tag">الإعلانات المبوبة</p>
+          <h2>طلبات خدمات ووظائف وفرص في صفحة مستقلة</h2>
+          <p class="hero-text">طلبات خدمات ووظائف وفرص في صفحة واحدة.</p>
+          <div class="hero-actions">
+            <a class="primary-button" href="#classifieds">تصفح الطلبات</a>
+            <a class="secondary-button" href="#classified-post">أضف إعلانًا مبوبًا</a>
+          </div>
+        </div>
+
+        <div class="hero-card">
+          <p class="card-label">الأقسام هنا</p>
+          <div class="database-status">
+            <strong>طلبات وخدمات وفرص عمل</strong>
+            <p>يمكنك البحث عن مدرس، وظيفة، سائق، مكتب خدمات، أو نشر طلبك الخاص وسيكون التواصل دائمًا عبر إدارة المنصة.</p>
+          </div>
+          <div class="quick-tags">
+            <span>طلب خدمة</span>
+            <span>وظيفة شاغرة</span>
+            <span>باحث عن عمل</span>
+            <span>مكتب خدمات</span>
+          </div>
+        </div>
+      </section>
+    </header>
+
+    <main>
+      <section class="classifieds-section" id="classifieds">
+        <div class="section-heading">
+          <p class="section-tag">الإعلانات المبوبة</p>
+          <h2>طلبات خدمات ووظائف وفرص من المستخدمين</h2>
+          <p class="section-lead">يمكن للأعضاء نشر طلبات مدرسين وسائقين ووظائف وفرص عمل، والتواصل يتم دائمًا عبر إدارة المنصة فقط.</p>
+        </div>
+
+        <div class="classified-toolbar">
+          <div class="classified-type-list">
+            <button class="classified-type-pill active" type="button" data-classified-type="all">الكل</button>
+            <button class="classified-type-pill" type="button" data-classified-type="service_request">طلب خدمة</button>
+            <button class="classified-type-pill" type="button" data-classified-type="job_opening">وظيفة شاغرة</button>
+            <button class="classified-type-pill" type="button" data-classified-type="job_seeker">باحث عن عمل</button>
+            <button class="classified-type-pill" type="button" data-classified-type="office_service">مكتب خدمات</button>
+          </div>
+
+          <div class="search-box classified-search-box">
+            <input id="classifiedSearchInput" type="text" placeholder="ابحث عن مدرس أو وظيفة أو مكتب..." aria-label="البحث في الإعلانات المبوبة">
+            <button id="classifiedSearchButton" type="button">بحث</button>
+          </div>
+        </div>
+
+        <div id="classifiedGrid" class="classified-grid"></div>
+        <p id="classifiedEmpty" class="empty-state hidden">لا توجد إعلانات مبوبة مطابقة للنوع أو البحث الحالي.</p>
+      </section>
+
+      <section class="classified-panel" id="classified-post">
+        <div class="classified-side-copy">
+          <p class="section-tag">أضف طلبًا جديدًا</p>
+          <h2>انشر طلبك أو فرصتك عبر المنصة</h2>
+          <p>اكتب المطلوب بوضوح، والتواصل يتم عبر إدارة المنصة فقط.</p>
+        </div>
+
+        <form id="classifiedForm" class="classified-form">
+          <label>
+            نوع الإعلان المبوب
+            <select name="adType" required>
+              <option value="">اختر نوع الإعلان</option>
+              <option value="service_request">طلب خدمة</option>
+              <option value="job_opening">وظيفة شاغرة</option>
+              <option value="job_seeker">باحث عن عمل</option>
+              <option value="office_service">مكتب أو خدمة توظيف</option>
+            </select>
+          </label>
+          <label>
+            التصنيف أو المجال
+            <input name="category" type="text" list="classifiedCategoryOptions" placeholder="مثال: مدرس رياضيات، سائق خاص، مكاتب توظيف، أو أخرى" required>
+            <datalist id="classifiedCategoryOptions">
+              <option value="مدرس رياضيات"></option>
+              <option value="سائق خاص"></option>
+              <option value="عاملة منزلية"></option>
+              <option value="وظائف إدارية"></option>
+              <option value="مكتب توظيف"></option>
+              <option value="أخرى"></option>
+            </datalist>
+          </label>
+          <label>
+            العنوان
+            <input name="title" type="text" placeholder="مثال: أبحث عن مدرس رياضيات للمرحلة الثانوية" required>
+          </label>
+          <label>
+            المدينة
+            <input name="city" type="text" placeholder="مثال: دمشق" required>
+          </label>
+          <label>
+            الراتب أو الميزانية أو العمولة
+            <input name="compensation" type="text" placeholder="مثال: راتب شهري أو حسب الاتفاق">
+          </label>
+          <label>
+            وصف الطلب
+            <textarea name="description" rows="5" placeholder="اشرح المهام أو الخبرة المطلوبة أو طبيعة الفرصة" required></textarea>
+          </label>
+          <p class="upload-hint">يُمنع إدراج أرقام الهاتف داخل الإعلان المبوب. التنسيق يتم فقط عبر إدارة المنصة.</p>
+          <button class="primary-button submit-button" type="submit">نشر الإعلان المبوب</button>
+          <p id="classifiedMessage" class="form-message"></p>
+        </form>
+      </section>
+    </main>
+
+    <footer class="site-footer" id="contact">
+      <div class="footer-hero">
+        <div>
+          <p class="section-tag">دعم المبوبة</p>
+          <h2>صفحة مستقلة للطلبات والخدمات حتى يصل المستخدم مباشرة لما يبحث عنه</h2>
+        </div>
+        <p>إذا احتجت حسابًا للنشر، انتقل إلى صفحة الحساب ثم عد إلى هنا لإضافة الإعلان المبوب.</p>
+      </div>
+
+      <div class="footer-grid">
+        <article class="footer-card">
+          <h3>الحساب والنشر</h3>
+          <p>يتطلب نشر الإعلان المبوب حساب عضو فعال.</p>
+          <a href="account.html#login">الانتقال إلى الحساب</a>
+        </article>
+
+        <article class="footer-card">
+          <h3>التواصل عبر الإدارة</h3>
+          <p>جميع طلبات التواصل حول الوظائف والخدمات تمر عبر إدارة المنصة.</p>
+          <a href="https://wa.me/963933001122" target="_blank" rel="noopener noreferrer">تواصل عبر واتساب</a>
+        </article>
+      </div>
+    </footer>
+  </div>
+
+  <nav class="mobile-bottom-nav" aria-label="التنقل السفلي">
+    <a class="mobile-nav-link" href="index.html">
+      <strong>الرئيسية</strong>
+      <span>البداية</span>
+    </a>
+    <a class="mobile-nav-link" href="sell.html">
+      <strong>بيع</strong>
+      <span>إعلان</span>
+    </a>
+    <a class="mobile-nav-link mobile-nav-link-sell" href="classifieds.html">
+      <strong>مبوبة</strong>
+      <span>طلبات</span>
+    </a>
+    <a class="mobile-nav-link" href="courier.html">
+      <strong>مندوب</strong>
+      <span>توصيل</span>
+    </a>
+    <a class="mobile-nav-link" href="account.html#login">
+      <strong>حسابي</strong>
+      <span>دخول</span>
+    </a>
+  </nav>
+
+  <script src="script.js"></script>
+</body>
+</html>

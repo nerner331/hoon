@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f7f1e8">
+  <title>المندوبون | هون ستور</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;700;800&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="courier">
+  <div class="page-shell">
+    <header class="hero">
+      <nav class="topbar">
+        <div class="top-actions">
+          <a class="nav-link" href="index.html">الرئيسية</a>
+          <a class="nav-link" href="account.html">الحساب</a>
+          <a class="nav-link" href="sell.html">بيع سلعة</a>
+          <a class="nav-link" href="classifieds.html">الإعلانات المبوبة</a>
+          <a class="nav-link nav-link-strong" href="courier.html">المندوبون</a>
+          <a class="nav-link" href="https://wa.me/963933001122" target="_blank" rel="noopener noreferrer">الدعم</a>
+        </div>
+
+        <div class="brand brand-stack">
+          <p class="eyebrow">هون ستور</p>
+          <img class="brand-logo" src="sh.png" alt="شعار هون ستور">
+        </div>
+      </nav>
+
+      <nav class="mobile-top-nav" aria-label="خيارات الجوال">
+        <a class="mobile-top-link" href="index.html">الرئيسية</a>
+        <a class="mobile-top-link" href="account.html">الحساب</a>
+        <a class="mobile-top-link" href="sell.html">بيع</a>
+        <a class="mobile-top-link" href="classifieds.html">المبوبة</a>
+        <a class="mobile-top-link mobile-top-link-strong" href="courier.html">مندوب</a>
+      </nav>
+
+      <section class="hero-content">
+        <div class="hero-copy">
+          <p class="section-tag">برنامج المندوبين</p>
+          <h2>صفحة مستقلة لطلبات التوصيل وحساب المندوب</h2>
+          <p class="hero-text">الدخول وتقديم الطلب ومتابعة الحالة في مكان واحد.</p>
+          <div class="hero-actions">
+            <a class="primary-button" href="#courier-access">دخول المندوب</a>
+            <a class="secondary-button" href="#courier-hub">إرسال طلب جديد</a>
+          </div>
+        </div>
+
+        <div class="hero-card">
+          <p class="card-label">ما المطلوب؟</p>
+          <div class="database-status">
+            <strong>هوية وصورة مباشرة وبيانات واضحة</strong>
+            <p>بعد تقديم الطلب تراجعه الإدارة، ويمكن للمندوب متابعة حالته ونطاق عمله من هذه الصفحة فقط.</p>
+          </div>
+          <div class="quick-tags">
+            <span>دخول مندوب</span>
+            <span>متابعة الحالة</span>
+            <span>طلب جديد</span>
+            <span>نسب توصيل</span>
+          </div>
+        </div>
+      </section>
+    </header>
+
+    <main>
+      <section class="members-hub" id="courier-access">
+        <div class="section-heading">
+          <p class="section-tag">حساب المندوب</p>
+          <h2>تسجيل دخول ومتابعة حالة الطلب</h2>
+        </div>
+
+        <div class="members-layout">
+          <div class="auth-shell">
+            <h3 class="auth-title">دخول المندوب</h3>
+            <form id="courierLoginForm" class="auth-form auth-form-active">
+              <label>
+                رقم الهاتف أو البريد الإلكتروني
+                <input name="identity" type="text" placeholder="09xxxxxxxx أو name@example.com" required>
+              </label>
+              <label>
+                كلمة المرور
+                <input name="password" type="password" placeholder="أدخل كلمة مرور المندوب" required>
+              </label>
+              <button class="primary-button submit-button" type="submit">تسجيل دخول مندوب</button>
+            </form>
+            <p id="authMessage" class="form-message"></p>
+          </div>
+
+          <div id="accountSummaryShell" class="members-database account-summary-shell">
+            <div class="database-banner">
+              <div>
+                <p class="section-tag">متابعة الطلب</p>
+                <h3 id="accountSummaryTitle">حساب المندوب</h3>
+              </div>
+              <button id="logoutButton" class="ghost-button logout-button hidden" type="button">تسجيل الخروج</button>
+            </div>
+
+            <p id="accountSummaryNote" class="account-summary-note">سجّل دخول المندوب لعرض حالتك.</p>
+
+            <div id="courierSummaryGrid" class="account-mini-grid">
+              <article class="account-mini-card">
+                <div class="account-mini-head">
+                  <h4>بيانات المندوب</h4>
+                  <span id="courierStatusBadge">قيد المراجعة</span>
+                </div>
+                <div class="mini-list">
+                  <article class="mini-item">
+                    <p id="courierVehicleState" class="mini-item-title">نوع المركبة: -</p>
+                    <p id="courierJoinDate" class="mini-item-meta">تاريخ الانضمام: -</p>
+                  </article>
+                  <article class="mini-item">
+                    <p id="courierIdentityState" class="mini-item-title">الهوية والصورة المباشرة: -</p>
+                    <p id="courierCoverageState" class="mini-item-meta">نطاق العمل: -</p>
+                  </article>
+                </div>
+              </article>
+
+              <article class="account-mini-card">
+                <div class="account-mini-head">
+                  <h4>نسب التوصيل</h4>
+                  <span id="courierRateCity">-</span>
+                </div>
+                <div id="courierRateList" class="mini-list"></div>
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="courier-hub" id="courier-hub">
+        <div class="section-heading">
+          <p class="section-tag">انضم إلينا كمندوب توصيل</p>
+          <h2>مطلوب مناديب في كافة المحافظات</h2>
+        </div>
+
+        <div class="courier-layout">
+          <div class="courier-copy">
+            <p class="courier-lead">إذا كانت لديك وسيلة نقل والتزام بالمواعيد، يمكنك التقديم كمندوب عبر هذه الصفحة.</p>
+
+            <div class="courier-highlights">
+              <span>صورة هوية شخصية</span>
+              <span>صورة مباشرة من الكاميرا</span>
+              <span>نسب واضحة لكل عملية</span>
+            </div>
+
+            <div class="courier-rates-shell">
+              <div class="section-heading section-heading-compact">
+                <p class="section-tag">نسب التوصيل</p>
+                <h3>حسب المدينة ونوع السلعة المباعة</h3>
+              </div>
+              <div id="courierRatesGrid" class="courier-rates-grid"></div>
+            </div>
+          </div>
+
+          <form id="courierForm" class="courier-form">
+            <label>
+              الاسم الكامل
+              <input name="fullName" type="text" placeholder="مثال: خالد الأحمد" required>
+            </label>
+            <label>
+              رقم الهاتف
+              <input name="phone" type="text" placeholder="09xxxxxxxx" required>
+            </label>
+            <label>
+              البريد الإلكتروني
+              <input name="email" type="email" placeholder="name@example.com">
+            </label>
+            <label>
+              المحافظة الأساسية
+              <input name="city" type="text" placeholder="مثال: دمشق" required>
+            </label>
+            <label>
+              نوع وسيلة التوصيل
+              <select name="vehicleType" required>
+                <option value="">اختر وسيلة التوصيل</option>
+                <option value="دراجة نارية">دراجة نارية</option>
+                <option value="سيارة خاصة">سيارة خاصة</option>
+                <option value="فان أو سيارة شحن">فان أو سيارة شحن</option>
+                <option value="توصيل داخل المدينة فقط">توصيل داخل المدينة فقط</option>
+              </select>
+            </label>
+            <label>
+              المدن أو المحافظات التي يمكنك تغطيتها
+              <input name="coverageCities" type="text" placeholder="مثال: دمشق - ريف دمشق - حمص">
+            </label>
+            <label>
+              رقم الهوية الشخصية
+              <input name="nationalIdNumber" type="text" placeholder="أدخل رقم الهوية" required>
+            </label>
+            <label>
+              كلمة المرور
+              <input name="password" type="password" placeholder="6 أحرف على الأقل" required>
+            </label>
+            <label>
+              صورة الهوية الشخصية
+              <input id="identityImageInput" name="identityImage" type="file" accept="image/*" required>
+            </label>
+            <label>
+              صورة مباشرة من الكاميرا
+              <input id="livePhotoInput" name="livePhoto" type="file" accept="image/*" capture="user" required>
+            </label>
+
+            <div class="dual-preview-grid">
+              <div class="image-preview-shell">
+                <div id="identityPreview" class="image-preview placeholder">
+                  <span>ستظهر معاينة الهوية هنا</span>
+                </div>
+                <p class="upload-hint">ارفع صورة واضحة لواجهة الهوية.</p>
+              </div>
+
+              <div class="image-preview-shell">
+                <div id="livePhotoPreview" class="image-preview placeholder">
+                  <span>ستظهر الصورة المباشرة هنا</span>
+                </div>
+                <p class="upload-hint">استخدم الكاميرا الأمامية أو الخلفية حسب الجهاز.</p>
+              </div>
+            </div>
+
+            <button class="primary-button submit-button" type="submit">إرسال طلب الانضمام</button>
+            <p id="courierMessage" class="form-message"></p>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer" id="contact">
+      <div class="footer-hero">
+        <div>
+          <p class="section-tag">دعم المندوبين</p>
+          <h2>كل ما يخص المندوب صار في صفحة مستقلة وواضحة</h2>
+        </div>
+        <p>لتسهيل الاستخدام، فصلنا تسجيل الدخول والطلب ونسب التوصيل في صفحة واحدة مخصصة للمندوبين فقط.</p>
+      </div>
+
+      <div class="footer-grid">
+        <article class="footer-card">
+          <h3>التواصل مع الإدارة</h3>
+          <p>للاستفسار عن حالة الطلب أو آلية الاعتماد.</p>
+          <a href="https://wa.me/963933001122" target="_blank" rel="noopener noreferrer">تواصل عبر واتساب</a>
+        </article>
+
+        <article class="footer-card">
+          <h3>الانتقال السريع</h3>
+          <span><a href="account.html">الحساب</a></span>
+          <span><a href="sell.html">بيع سلعة</a></span>
+          <span><a href="classifieds.html">الإعلانات المبوبة</a></span>
+        </article>
+      </div>
+    </footer>
+  </div>
+
+  <nav class="mobile-bottom-nav" aria-label="التنقل السفلي">
+    <a class="mobile-nav-link" href="index.html">
+      <strong>الرئيسية</strong>
+      <span>البداية</span>
+    </a>
+    <a class="mobile-nav-link" href="sell.html">
+      <strong>بيع</strong>
+      <span>إعلان</span>
+    </a>
+    <a class="mobile-nav-link" href="classifieds.html">
+      <strong>مبوبة</strong>
+      <span>طلبات</span>
+    </a>
+    <a class="mobile-nav-link mobile-nav-link-sell" href="courier.html">
+      <strong>مندوب</strong>
+      <span>توصيل</span>
+    </a>
+    <a class="mobile-nav-link" href="account.html">
+      <strong>حسابي</strong>
+      <span>عضو</span>
+    </a>
+  </nav>
+
+  <script src="script.js"></script>
+</body>
+</html>

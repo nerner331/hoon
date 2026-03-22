@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f7f1e8">
+  <title>بيع سلعة | هون ستور</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;700;800&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="sell">
+  <div class="page-shell">
+    <header class="hero">
+      <nav class="topbar">
+        <div class="top-actions">
+          <a class="nav-link" href="index.html">الرئيسية</a>
+          <a class="nav-link" href="account.html">الحساب</a>
+          <a class="nav-link nav-link-strong" href="sell.html">بيع سلعة</a>
+          <a class="nav-link" href="classifieds.html">الإعلانات المبوبة</a>
+          <a class="nav-link" href="courier.html">المندوبون</a>
+          <a class="nav-link" href="https://wa.me/963933001122" target="_blank" rel="noopener noreferrer">الدعم</a>
+        </div>
+
+        <div class="brand brand-stack">
+          <p class="eyebrow">هون ستور</p>
+          <img class="brand-logo" src="sh.png" alt="شعار هون ستور">
+        </div>
+      </nav>
+
+      <nav class="mobile-top-nav" aria-label="خيارات الجوال">
+        <a class="mobile-top-link" href="index.html">الرئيسية</a>
+        <a class="mobile-top-link" href="account.html">الحساب</a>
+        <a class="mobile-top-link mobile-top-link-strong" href="sell.html">بيع</a>
+        <a class="mobile-top-link" href="classifieds.html">المبوبة</a>
+        <a class="mobile-top-link" href="courier.html">مندوب</a>
+      </nav>
+
+      <section class="hero-content">
+        <div class="hero-copy">
+          <p class="section-tag">إضافة إعلان بيع</p>
+          <div class="hero-actions">
+            <a class="primary-button" href="#sell">ابدأ الآن</a>
+            <a class="secondary-button" href="account.html#login">تسجيل الدخول</a>
+          </div>
+        </div>
+
+        <div class="hero-card">
+          <p class="card-label">قبل النشر</p>
+          <div class="database-status">
+            <strong>مهم لنجاح إعلانك</strong>
+            <p>صوّر المنتج بوضوح، اكتب السعر والمدينة بدقة، ولا تضف أي رقم هاتف داخل الإعلان.</p>
+          </div>
+          <div class="quick-tags">
+            <span>صورة مباشرة</span>
+            <span>حتى 5 صور</span>
+            <span>مراجعة الإدارة</span>
+          </div>
+        </div>
+      </section>
+    </header>
+
+    <main>
+      <section class="sell-panel" id="sell">
+        <div class="sell-copy">
+          <div class="sell-copy-top">
+            <p class="section-tag">نشر إعلان جديد</p>
+            <h2>3 خطوات سريعة قبل الإرسال</h2>
+          </div>
+
+          <div class="sell-steps">
+            <article class="sell-step-card">
+              <strong>1</strong>
+              <div>
+                <h3>املأ الأساسيات</h3>
+                <p>اسم المنتج، السعر، المدينة، والتصنيف.</p>
+              </div>
+            </article>
+
+            <article class="sell-step-card">
+              <strong>2</strong>
+              <div>
+                <h3>التقط صورًا واضحة</h3>
+                <p>حتى 5 صور حقيقية من الكاميرا مع إضاءة جيدة.</p>
+              </div>
+            </article>
+
+            <article class="sell-step-card">
+              <strong>3</strong>
+              <div>
+                <h3>أرسل وانتظر المراجعة</h3>
+                <p>لن يظهر الإعلان قبل اعتماد الإدارة له.</p>
+              </div>
+            </article>
+          </div>
+
+          <p class="sell-copy-note">يُمنع وضع أرقام الهاتف داخل الإعلان، لأن التواصل يتم عبر إدارة المنصة فقط.</p>
+        </div>
+
+        <form id="listingForm" class="sell-form">
+          <label>
+            اسم المنتج
+            <input name="title" type="text" placeholder="مثال: لابتوب مستعمل" required>
+          </label>
+          <label>
+            السعر بالليرة السورية
+            <input name="price" type="number" min="1" placeholder="مثال: 750000" required>
+          </label>
+          <label>
+            المدينة
+            <input name="city" type="text" placeholder="مثال: دمشق" required>
+          </label>
+          <label>
+            التصنيف
+            <select name="category" required>
+              <option value="">اختر التصنيف</option>
+              <option value="موبايلات">موبايلات</option>
+              <option value="إلكترونيات">إلكترونيات</option>
+              <option value="أثاث">أثاث</option>
+              <option value="أجهزة منزلية">أجهزة منزلية</option>
+              <option value="دراجات">دراجات</option>
+              <option value="أخرى">أخرى</option>
+            </select>
+          </label>
+          <label>
+            وصف مختصر
+            <textarea name="description" rows="3" maxlength="1000" placeholder="اكتب حالة المنتج وأي تفاصيل مهمة" required></textarea>
+          </label>
+          <p class="upload-hint">يُمنع إدراج أرقام الهاتف أو وسائل التواصل داخل الإعلان. أي تواصل يتم عبر إدارة المنصة فقط.</p>
+          <label>
+            صورة رئيسية للإعلان
+            <div class="camera-upload-actions">
+              <button id="openListingCameraButton" class="secondary-button" type="button">فتح الكاميرا</button>
+              <button id="clearListingImageButton" class="ghost-button hidden" type="button">حذف الصور</button>
+            </div>
+          </label>
+          <div id="listingCameraPanel" class="camera-capture-panel hidden">
+            <video id="listingCameraVideo" class="camera-stream" autoplay playsinline muted></video>
+            <div class="camera-capture-actions">
+              <button id="captureListingCameraButton" class="primary-button" type="button">التقاط الصورة الآن</button>
+              <button id="cancelListingCameraButton" class="ghost-button" type="button">إغلاق الكاميرا</button>
+            </div>
+            <canvas id="listingCameraCanvas" class="camera-canvas hidden"></canvas>
+          </div>
+          <div class="image-preview-shell">
+            <div id="listingPreviewEmpty" class="image-preview placeholder">
+              <span>ستظهر معاينات الصور هنا بعد الالتقاط المباشر</span>
+            </div>
+            <div id="listingPreviewGrid" class="listing-preview-grid"></div>
+            <p id="imagePolicyNote" class="upload-hint">يمكنك التقاط حتى 5 صور مباشرة وواضحة للمنتج. الصورة الأولى ستكون الرئيسية في الإعلان.</p>
+          </div>
+          <label class="checkbox-row">
+            <input name="isFeatured" type="checkbox">
+            <span>أرغب بطلب إعلان مميز مدفوع في الصفحة الرئيسية</span>
+          </label>
+          <button class="primary-button submit-button" type="submit">نشر الإعلان</button>
+          <p id="listingMessage" class="form-message"></p>
+        </form>
+      </section>
+    </main>
+
+  </div>
+
+  <nav class="mobile-bottom-nav" aria-label="التنقل السفلي">
+    <a class="mobile-nav-link" href="index.html">
+      <strong>الرئيسية</strong>
+      <span>البداية</span>
+    </a>
+    <a class="mobile-nav-link" href="classifieds.html">
+      <strong>مبوبة</strong>
+      <span>طلبات</span>
+    </a>
+    <a class="mobile-nav-link mobile-nav-link-sell" href="sell.html">
+      <strong>بيع</strong>
+      <span>إعلان</span>
+    </a>
+    <a class="mobile-nav-link" href="courier.html">
+      <strong>مندوب</strong>
+      <span>توصيل</span>
+    </a>
+    <a class="mobile-nav-link" href="account.html#login">
+      <strong>حسابي</strong>
+      <span>دخول</span>
+    </a>
+  </nav>
+
+  <script src="script.js"></script>
+</body>
+</html>

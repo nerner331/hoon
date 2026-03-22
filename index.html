@@ -10,556 +10,151 @@
   <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;700;800&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
-<body>
+<body data-page="home">
   <div class="page-shell">
     <header class="hero">
-      <nav class="topbar">
-        <div class="top-actions">
-          <a class="nav-link auth-jump" href="#members" data-auth-target="login">تسجيل الدخول</a>
-          <a class="nav-link" href="#courier-hub">انضم كمندوب</a>
-          <a class="nav-link" href="#featured-ads">الإعلانات الذهبية</a>
-          <a class="nav-link" href="#listings">الإعلانات</a>
-          <a class="nav-link" href="#services">الخدمات</a>
-          <a class="nav-link" href="#contact">اتصل بنا</a>
-        </div>
-
+      <nav class="topbar" role="navigation" aria-label="التنقل الرئيسي">
         <div class="brand brand-stack">
           <p class="eyebrow">كل ما تبحث عنه تجده في</p>
           <img class="brand-logo" src="sh.png" alt="شعار هون ستور">
         </div>
-      </nav>
 
-      <nav class="mobile-top-nav" aria-label="خيارات الجوال">
-        <a class="mobile-top-link auth-jump mobile-top-link-strong" href="#members" data-auth-target="login">تسجيل الدخول</a>
-        <a class="mobile-top-link" href="#featured-ads">الذهبية</a>
-        <a class="mobile-top-link" href="#listings">الإعلانات</a>
-        <a class="mobile-top-link" href="#sell">بيع الآن</a>
-        <a class="mobile-top-link" href="#services">الخدمات</a>
-        <a class="mobile-top-link" href="#contact">التواصل</a>
+        <div class="top-actions">
+          <a class="nav-link nav-link-strong" href="index.html">الرئيسية</a>
+          <a class="nav-link" href="account.html">الحساب</a>
+          <a class="nav-link" href="sell.html">بيع سلعة</a>
+          <a class="nav-link" href="classifieds.html">المبوبة</a>
+          <a class="nav-link" href="courier.html">المندوبون</a>
+          <a class="nav-link" href="#contact">تواصل</a>
+        </div>
       </nav>
 
       <section class="hero-content">
-        <div class="hero-copy">
-          <p class="section-tag">بيع وشراء داخل سوريا</p>
-          <h2>المصداقية وجودة الخدمة لتسوق أكثر أمانًا</h2>
-          <p class="hero-text">
-            بيع وشراء آمن من خلال فريق عمل متكامل لتقديم مفهوم جديد في عالم التسوق الإلكتروني.
-          </p>
+        <div class="hero-info">
+          <div class="hero-copy">
+            <p class="section-tag">بيع وشراء داخل سوريا</p>
 
-          <div class="hero-actions">
-            <a class="primary-button" href="#sell">أضف إعلانك الآن</a>
-            <a class="secondary-button" href="#members">أنشئ حساب عضو</a>
+            <div class="hero-actions">
+              <a class="primary-button" href="sell.html">أضف إعلان بيع</a>
+              <a class="secondary-button" href="account.html">إنشاء حساب</a>
+            </div>
           </div>
 
           <ul class="hero-stats">
             <li>
               <strong id="membersCount">0</strong>
-              <span>عضو مسجل</span>
+              <span>عضو</span>
             </li>
             <li>
               <strong id="listingsCount">0</strong>
-              <span>إعلان منشور</span>
+              <span>إعلان</span>
             </li>
             <li>
               <strong id="featuredCount">0</strong>
-              <span>إعلان مميز</span>
+              <span>مميز</span>
             </li>
             <li>
               <strong id="citiesCount">0</strong>
-              <span>مدينة مغطاة</span>
+              <span>مدينة</span>
             </li>
           </ul>
         </div>
 
-        <div class="hero-card">
-          <p class="card-label">ابحث بسرعة</p>
-          <div class="database-status">
-            <strong>إعلانات من بائعين داخل مدن سوريا</strong>
-            <p>ابحث باسم المنتج أو اختر المدينة للوصول إلى العروض الأقرب لك والتواصل مباشرة مع البائع.</p>
-          </div>
+        <aside class="hero-card">
+          <p class="card-label">ابحث الآن</p>
 
           <div class="search-box">
-            <input id="searchInput" type="text" placeholder="ابحث عن موبايل، أثاث، أجهزة..." aria-label="البحث في الإعلانات">
-            <button id="searchButton" type="button">بحث</button>
+            <input id="searchInput" type="text" placeholder="موبايل، أثاث، أجهزة..." aria-label="البحث في الإعلانات">
+            <button id="searchButton" type="button" aria-label="زر البحث">بحث</button>
           </div>
 
           <div class="quick-tags">
-            <span>دمشق</span>
-            <span>حلب</span>
-            <span>حمص</span>
-            <span>اللاذقية</span>
+            <button type="button" class="tag-btn" data-city="دمشق">دمشق</button>
+            <button type="button" class="tag-btn" data-city="حلب">حلب</button>
+            <button type="button" class="tag-btn" data-city="حمص">حمص</button>
+            <button type="button" class="tag-btn" data-city="اللاذقية">اللاذقية</button>
           </div>
 
-          <p class="hero-note">ابدأ من التصنيفات أو تصفح أحدث الإعلانات في الأسفل.</p>
-        </div>
+          <p class="database-status">
+            <strong>إعلانات من بائعين سوريين</strong>
+          </p>
+        </aside>
       </section>
     </header>
 
     <main>
-      <section class="features" id="platform-features">
-        <div class="section-heading">
-          <p class="section-tag">مزايا المنصة</p>
-          <h2>كل ما تحتاجه للبيع والشراء الآمن في مكان واحد</h2>
-          <p class="section-lead">
-            منصة محلية مصممة للسوق السوري، تجمع بين وضوح الإعلان، الإشراف على الخدمة، وإبراز الإعلانات الذهبية
-            داخل الواجهة الرئيسية.
-          </p>
-        </div>
-
-        <div class="feature-grid">
-          <article class="feature-card">
-            <span>ثقة ومصداقية</span>
-            <h3>متابعة أوضح بين البائع والمشتري</h3>
-            <p>نوفر بيئة بيع وشراء أكثر أمانًا مع تواصل منظم يقلل الالتباس ويرفع الثقة في كل عملية.</p>
-          </article>
-
-          <article class="feature-card">
-            <span>استلام وتسليم</span>
-            <h3>خدمة بين المحافظات تحت إشراف المنصة</h3>
-            <p>تنسيق الاستلام والتسليم كطرف ثالث لحماية حق البائع والمشتري في عمليات النقل والشحن.</p>
-          </article>
-
-          <article class="feature-card feature-card-gold">
-            <span>ظهور أقوى</span>
-            <h3>إعلانات ذهبية في الواجهة الرئيسية</h3>
-            <p>الإعلانات الذهبية تظهر أولًا مع شارة واضحة وإبراز بصري يمنح السلعة فرص وصول ومشاهدة أعلى.</p>
-          </article>
-
-          <article class="feature-card">
-            <span>دعم مباشر</span>
-            <h3>فريق متابعة وخدمات تشغيل يومية</h3>
-            <p>متابعة مباشرة للحسابات والإعلانات والخدمات التشغيلية بما يدعم تجربة أكثر احترافية للمستخدم.</p>
-          </article>
-        </div>
-      </section>
-
       <section class="featured-ads" id="featured-ads">
         <div class="section-heading featured-heading">
           <div>
             <p class="section-tag">الإعلانات الذهبية</p>
-            <h2>إعلانات بارزة تظهر في الواجهة الرئيسية</h2>
+
           </div>
-          <a class="ghost-button" href="#sell">اطلب ظهورًا ذهبيًا لإعلانك</a>
+          <a class="ghost-button" href="sell.html">اطلب ظهورًا ذهبيًا لإعلانك</a>
         </div>
 
         <p class="section-lead">تظهر هنا الإعلانات الذهبية أولًا، ثم الإعلانات المميزة حسب أولوية العرض داخل المنصة.</p>
         <div id="featuredGrid" class="featured-grid"></div>
       </section>
 
-      <section class="members-hub" id="members">
+      <section class="categories" aria-label="تصنيفات الإعلانات">
         <div class="section-heading">
-          <p class="section-tag">الحساب</p>
-          <h2>تسجيل الدخول أو إنشاء حساب</h2>
-        </div>
-
-        <div class="members-layout">
-          <div class="auth-shell">
-            <h3 class="auth-title">الدخول إلى الحساب</h3>
-
-            <div class="auth-switch">
-              <button class="auth-tab active" type="button" data-panel="register">إنشاء حساب</button>
-              <button class="auth-tab" type="button" data-panel="login">تسجيل الدخول</button>
-              <button class="auth-tab" type="button" data-panel="courier-login">دخول مندوب</button>
-            </div>
-
-            <form id="registerForm" class="auth-form auth-form-active">
-              <label>
-                الاسم الكامل
-                <input name="fullName" type="text" placeholder="مثال: أحمد اليوسف" required>
-              </label>
-              <label>
-                البريد الإلكتروني
-                <input name="email" type="email" placeholder="name@example.com" required>
-              </label>
-              <label>
-                رقم الهاتف
-                <input name="phone" type="text" placeholder="09xxxxxxxx" required>
-              </label>
-              <label>
-                المدينة
-                <input name="city" type="text" placeholder="مثال: دمشق" required>
-              </label>
-              <label>
-                كلمة المرور
-                <input name="password" type="password" placeholder="6 أحرف على الأقل" required>
-              </label>
-              <button class="primary-button submit-button" type="submit">إنشاء حساب</button>
-            </form>
-
-            <form id="loginForm" class="auth-form">
-              <label>
-                البريد الإلكتروني
-                <input name="email" type="email" placeholder="name@example.com" required>
-              </label>
-              <label>
-                كلمة المرور
-                <input name="password" type="password" placeholder="أدخل كلمة المرور" required>
-              </label>
-              <button class="primary-button submit-button" type="submit">تسجيل الدخول</button>
-            </form>
-
-            <form id="courierLoginForm" class="auth-form">
-              <label>
-                رقم الهاتف أو البريد الإلكتروني
-                <input name="identity" type="text" placeholder="09xxxxxxxx أو name@example.com" required>
-              </label>
-              <label>
-                كلمة المرور
-                <input name="password" type="password" placeholder="أدخل كلمة مرور المندوب" required>
-              </label>
-              <button class="primary-button submit-button" type="submit">تسجيل دخول مندوب</button>
-            </form>
-
-            <p id="authMessage" class="form-message"></p>
-          </div>
-
-          <div id="accountSummaryShell" class="members-database account-summary-shell">
-            <div class="database-banner">
-              <div>
-                <p class="section-tag">حسابي</p>
-                <h3 id="accountSummaryTitle">إعلاناتي والمفضلة</h3>
-              </div>
-              <button id="logoutButton" class="ghost-button logout-button hidden" type="button">تسجيل الخروج</button>
-            </div>
-
-            <p id="accountSummaryNote" class="account-summary-note">سجّل الدخول لعرض إعلاناتك الشخصية والإعلانات المفضلة فقط.</p>
-
-            <div id="memberSummaryGrid" class="account-mini-grid">
-              <article class="account-mini-card">
-                <div class="account-mini-head">
-                  <h4>إعلاناتي</h4>
-                  <span id="myListingsCount">0</span>
-                </div>
-                <div id="myListingsMini" class="mini-list"></div>
-              </article>
-
-              <article class="account-mini-card">
-                <div class="account-mini-head">
-                  <h4>المفضلة</h4>
-                  <span id="favoriteListingsCount">0</span>
-                </div>
-                <div id="favoriteListingsMini" class="mini-list"></div>
-              </article>
-            </div>
-
-            <div id="courierSummaryGrid" class="account-mini-grid hidden">
-              <article class="account-mini-card">
-                <div class="account-mini-head">
-                  <h4>بيانات المندوب</h4>
-                  <span id="courierStatusBadge">قيد المراجعة</span>
-                </div>
-                <div class="mini-list">
-                  <article class="mini-item">
-                    <p id="courierVehicleState" class="mini-item-title">نوع المركبة: -</p>
-                    <p id="courierJoinDate" class="mini-item-meta">تاريخ الانضمام: -</p>
-                  </article>
-                  <article class="mini-item">
-                    <p id="courierIdentityState" class="mini-item-title">الهوية والصورة المباشرة: -</p>
-                    <p id="courierCoverageState" class="mini-item-meta">نطاق العمل: -</p>
-                  </article>
-                </div>
-              </article>
-
-              <article class="account-mini-card">
-                <div class="account-mini-head">
-                  <h4>نسب التوصيل</h4>
-                  <span id="courierRateCity">-</span>
-                </div>
-                <div id="courierRateList" class="mini-list"></div>
-              </article>
-            </div>
+          <div>
+            <p class="section-tag">التصنيفات</p>
+            <h2>فلترة حسب النوع</h2>
           </div>
         </div>
-      </section>
-
-      <section class="categories">
-        <div class="section-heading">
-          <p class="section-tag">التصنيفات</p>
-          <h2>فلترة الإعلانات حسب النوع</h2>
-        </div>
-        <div class="category-list">
+        <div class="category-list" role="group" aria-label="قائمة التصنيفات">
           <button class="category-pill active" type="button" data-category="الكل">الكل</button>
           <button class="category-pill" type="button" data-category="موبايلات">موبايلات</button>
           <button class="category-pill" type="button" data-category="إلكترونيات">إلكترونيات</button>
           <button class="category-pill" type="button" data-category="أثاث">أثاث</button>
-          <button class="category-pill" type="button" data-category="أجهزة منزلية">أجهزة منزلية</button>
+          <button class="category-pill" type="button" data-category="أجهزة منزلية">أجهزة</button>
           <button class="category-pill" type="button" data-category="دراجات">دراجات</button>
+          <button class="category-pill" type="button" data-category="أخرى">أخرى</button>
         </div>
       </section>
 
       <section class="listings" id="listings">
         <div class="section-heading">
           <p class="section-tag">الإعلانات</p>
-          <h2>أحدث الإعلانات المتاحة الآن</h2>
+
         </div>
 
         <div id="listingsGrid" class="listing-grid"></div>
         <p id="listingEmpty" class="empty-state hidden">لا توجد نتائج مطابقة للبحث أو التصنيف الحالي.</p>
       </section>
-
-      <section class="sell-panel" id="sell">
-        <div class="sell-copy">
-          <p class="section-tag">نشر إعلان جديد</p>
-          <h2>أضف إعلانك للبيع</h2>
-          <p>أدخل تفاصيل المنتج والسعر والمدينة، ثم التقط صورة مباشرة وواضحة للمنتج قبل إرسال الإعلان للمراجعة.</p>
-          <ul class="sell-points">
-            <li>اكتب وصفًا مختصرًا يوضح حالة المنتج.</li>
-            <li>التقط صورة مباشرة وواضحة بالكاميرا، فالصور المخالفة أو غير الحقيقية قد تُرفض.</li>
-            <li>حدّد السعر بالليرة السورية والمدينة بدقة.</li>
-            <li>لن يظهر الإعلان قبل مراجعة الإدارة للصورة واعتمادها.</li>
-          </ul>
-        </div>
-
-        <form id="listingForm" class="sell-form">
-          <label>
-            اسم المنتج
-            <input name="title" type="text" placeholder="مثال: لابتوب مستعمل" required>
-          </label>
-          <label>
-            السعر بالليرة السورية
-            <input name="price" type="number" min="1" placeholder="مثال: 750000" required>
-          </label>
-          <label>
-            المدينة
-            <input name="city" type="text" placeholder="مثال: دمشق" required>
-          </label>
-          <label>
-            التصنيف
-            <select name="category" required>
-              <option value="">اختر التصنيف</option>
-              <option value="موبايلات">موبايلات</option>
-              <option value="إلكترونيات">إلكترونيات</option>
-              <option value="أثاث">أثاث</option>
-              <option value="أجهزة منزلية">أجهزة منزلية</option>
-              <option value="دراجات">دراجات</option>
-            </select>
-          </label>
-          <label>
-            وصف مختصر
-            <textarea name="description" rows="4" placeholder="اكتب حالة المنتج وأي تفاصيل مهمة" required></textarea>
-          </label>
-          <label>
-            صورة رئيسية للإعلان
-            <div class="camera-upload-actions">
-              <button id="openListingCameraButton" class="secondary-button" type="button">فتح الكاميرا</button>
-              <button id="clearListingImageButton" class="ghost-button hidden" type="button">حذف الصورة</button>
-            </div>
-          </label>
-          <div id="listingCameraPanel" class="camera-capture-panel hidden">
-            <video id="listingCameraVideo" class="camera-stream" autoplay playsinline muted></video>
-            <div class="camera-capture-actions">
-              <button id="captureListingCameraButton" class="primary-button" type="button">التقاط الصورة الآن</button>
-              <button id="cancelListingCameraButton" class="ghost-button" type="button">إغلاق الكاميرا</button>
-            </div>
-            <canvas id="listingCameraCanvas" class="camera-canvas hidden"></canvas>
-          </div>
-          <div class="image-preview-shell">
-            <div id="imagePreview" class="image-preview placeholder">
-              <span>ستظهر معاينة الصورة هنا بعد الالتقاط المباشر</span>
-            </div>
-            <p id="imagePolicyNote" class="upload-hint">يلزم التقاط صورة مباشرة وواضحة للمنتج. تراجع الإدارة الصورة قبل اعتماد الإعلان للتأكد من أنها حقيقية وغير مخالفة.</p>
-          </div>
-          <label class="checkbox-row">
-            <input name="isFeatured" type="checkbox">
-            <span>أرغب بطلب إعلان مميز مدفوع في الصفحة الرئيسية</span>
-          </label>
-          <button class="primary-button submit-button" type="submit">نشر الإعلان</button>
-          <p id="listingMessage" class="form-message"></p>
-        </form>
-      </section>
-
-      <section class="courier-hub" id="courier-hub">
-        <div class="section-heading">
-          <p class="section-tag">انضم إلينا كمندوب توصيل</p>
-          <h2>مطلوب مناديب في كافة المحافظات</h2>
-        </div>
-
-        <div class="courier-layout">
-          <div class="courier-copy">
-            <p class="courier-lead">
-              إذا كنت تملك وسيلة نقل وتستطيع الالتزام بالمواعيد، يمكنك الانضمام كمندوب والعمل
-              تحت إشراف المنصة مع نسب واضحة بحسب المدينة ونوع السلعة.
-            </p>
-
-            <div class="courier-highlights">
-              <span>صورة هوية شخصية</span>
-              <span>صورة مباشرة من الكاميرا</span>
-              <span>نسب واضحة لكل عملية</span>
-            </div>
-
-            <div class="database-status courier-brief">
-              <strong>برنامج المندوبين</strong>
-              <p>
-                يتم استقبال طلبات المندوبين من جميع المحافظات، مع مراجعة البيانات قبل اعتماد
-                الحساب بشكل نهائي.
-              </p>
-            </div>
-
-            <div class="courier-stats-grid">
-              <article class="courier-stat-card">
-                <strong id="courierCount">0</strong>
-                <span>طلبات مندوبين مسجلة</span>
-              </article>
-              <article class="courier-stat-card">
-                <strong>2</strong>
-                <span>صور مطلوبة لإكمال الطلب</span>
-              </article>
-              <article class="courier-stat-card">
-                <strong>5</strong>
-                <span>تصنيفات نسب توصيل</span>
-              </article>
-            </div>
-
-            <div class="courier-rates-shell">
-              <div class="section-heading section-heading-compact">
-                <p class="section-tag">نسب التوصيل</p>
-                <h3>حسب المدينة ونوع السلعة المباعة</h3>
-              </div>
-              <div id="courierRatesGrid" class="courier-rates-grid"></div>
-            </div>
-          </div>
-
-          <form id="courierForm" class="courier-form">
-            <label>
-              الاسم الكامل
-              <input name="fullName" type="text" placeholder="مثال: خالد الأحمد" required>
-            </label>
-            <label>
-              رقم الهاتف
-              <input name="phone" type="text" placeholder="09xxxxxxxx" required>
-            </label>
-            <label>
-              البريد الإلكتروني
-              <input name="email" type="email" placeholder="name@example.com">
-            </label>
-            <label>
-              المحافظة الأساسية
-              <input name="city" type="text" placeholder="مثال: دمشق" required>
-            </label>
-            <label>
-              نوع وسيلة التوصيل
-              <select name="vehicleType" required>
-                <option value="">اختر وسيلة التوصيل</option>
-                <option value="دراجة نارية">دراجة نارية</option>
-                <option value="سيارة خاصة">سيارة خاصة</option>
-                <option value="فان أو سيارة شحن">فان أو سيارة شحن</option>
-                <option value="توصيل داخل المدينة فقط">توصيل داخل المدينة فقط</option>
-              </select>
-            </label>
-            <label>
-              المدن أو المحافظات التي يمكنك تغطيتها
-              <input name="coverageCities" type="text" placeholder="مثال: دمشق - ريف دمشق - حمص">
-            </label>
-            <label>
-              رقم الهوية الشخصية
-              <input name="nationalIdNumber" type="text" placeholder="أدخل رقم الهوية" required>
-            </label>
-            <label>
-              كلمة المرور
-              <input name="password" type="password" placeholder="6 أحرف على الأقل" required>
-            </label>
-            <label>
-              صورة الهوية الشخصية
-              <input id="identityImageInput" name="identityImage" type="file" accept="image/*" required>
-            </label>
-            <label>
-              صورة مباشرة من الكاميرا
-              <input id="livePhotoInput" name="livePhoto" type="file" accept="image/*" capture="user" required>
-            </label>
-
-            <div class="dual-preview-grid">
-              <div class="image-preview-shell">
-                <div id="identityPreview" class="image-preview placeholder">
-                  <span>ستظهر معاينة الهوية هنا</span>
-                </div>
-                <p class="upload-hint">ارفع صورة واضحة لواجهة الهوية.</p>
-              </div>
-
-              <div class="image-preview-shell">
-                <div id="livePhotoPreview" class="image-preview placeholder">
-                  <span>ستظهر الصورة المباشرة هنا</span>
-                </div>
-                <p class="upload-hint">استخدم الكاميرا الأمامية أو الخلفية حسب الجهاز.</p>
-              </div>
-            </div>
-
-            <button class="primary-button submit-button" type="submit">إرسال طلب الانضمام</button>
-            <p id="courierMessage" class="form-message"></p>
-          </form>
-        </div>
-      </section>
-
     </main>
 
-    <footer class="site-footer" id="services">
-      <div class="footer-hero">
-        <div>
-          <p class="section-tag">خدمات المنصة</p>
-          <h2>بيع وشراء منظم مع دعم للدفع والتسليم والتواصل</h2>
-        </div>
-        <p>
-          خدمات مساندة تساعد البائع والمشتري على إتمام البيع بسهولة أكبر داخل سوريا.
-        </p>
-      </div>
-
+    <footer class="site-footer" id="contact">
       <div class="footer-grid">
-        <article class="footer-card" id="contact">
+        <article class="footer-card">
           <h3>اتصل بنا</h3>
-          <p>فريق الدعم متاح عبر واتساب للمساعدة في الحسابات، الإعلانات المميزة، والاستفسارات العامة.</p>
+          <p>فريق الدعم متاح عبر واتساب للمساعدة في الحسابات، التنسيق بين الأطراف، والاستفسارات العامة.</p>
           <a href="https://wa.me/963933001122" target="_blank" rel="noopener noreferrer">تواصل عبر واتساب</a>
           <span>ساعات العمل: يوميًا من 7 صباحًا حتى 12 ليلًا</span>
         </article>
-
-        <article class="footer-card">
-          <h3>خدمات الدفع</h3>
-          <p>يتم الاتفاق على الدفع تحت إشراف المنصة بطريقة تناسب الطرفين.</p>
-          <span>خيارات مرنة حسب المدينة ونوع المنتج</span>
-        </article>
-
-        <article class="footer-card">
-          <h3>استلام وتسليم المبيعات</h3>
-          <p>نقوم باستلام السلع وتسليمها بين المحافظات كطرف ثالث يضمن حق البائع والمشتري.</p>
-          <span>مناسب للأثاث، الأجهزة، والمشتريات الكبيرة</span>
-        </article>
-
-        <article class="footer-card">
-          <h3>خدمات التوصيل</h3>
-          <p>إمكانية ربط الإعلان بخدمة توصيل محلية لتوصيل الطلبات داخل المدينة أو بين المحافظات.</p>
-          <span>دعم خاص للإعلانات المميزة وأصحاب المتاجر الصغيرة</span>
-        </article>
-      </div>
-
-      <div class="footer-bottom">
-        <p>هون ستور</p>
-        <div class="footer-links">
-          <a href="#members">الحساب</a>
-          <a href="#courier-hub">انضم كمندوب</a>
-          <a href="#featured-ads">الإعلانات المدفوعة</a>
-          <a href="#listings">الإعلانات</a>
-          <a href="#contact">الدعم والتواصل</a>
-        </div>
       </div>
     </footer>
   </div>
 
   <nav class="mobile-bottom-nav" aria-label="التنقل السفلي">
-    <a class="mobile-nav-link" href="#listings">
+    <a class="mobile-nav-link" href="index.html">
       <strong>الرئيسية</strong>
       <span>إعلانات</span>
     </a>
-    <a class="mobile-nav-link" href="#featured-ads">
-      <strong>مميز</strong>
-      <span>مدفوع</span>
+    <a class="mobile-nav-link" href="classifieds.html">
+      <strong>مبوبة</strong>
+      <span>طلبات</span>
     </a>
-    <a class="mobile-nav-link mobile-nav-link-sell" href="#sell">
-      <strong>بيع الآن</strong>
+    <a class="mobile-nav-link mobile-nav-link-sell" href="sell.html">
+      <strong>بيع</strong>
       <span>أضف إعلان</span>
     </a>
-    <a class="mobile-nav-link" href="#courier-hub">
+    <a class="mobile-nav-link" href="courier.html">
       <strong>مندوب</strong>
       <span>توصيل</span>
     </a>
-    <a class="mobile-nav-link auth-jump" href="#members" data-auth-target="login">
+    <a class="mobile-nav-link" href="account.html#login">
       <strong>حسابي</strong>
       <span>دخول</span>
     </a>

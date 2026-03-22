@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f7f1e8">
+  <title>الحساب | هون ستور</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;700;800&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="account">
+  <div class="page-shell">
+    <header class="hero">
+      <nav class="topbar">
+        <div class="top-actions">
+          <a class="nav-link" href="index.html">الرئيسية</a>
+          <a class="nav-link nav-link-strong" href="account.html">الحساب</a>
+          <a class="nav-link" href="sell.html">بيع سلعة</a>
+          <a class="nav-link" href="classifieds.html">الإعلانات المبوبة</a>
+          <a class="nav-link" href="courier.html">المندوبون</a>
+          <a class="nav-link" href="https://wa.me/963933001122" target="_blank" rel="noopener noreferrer">الدعم</a>
+        </div>
+
+        <div class="brand brand-stack">
+          <p class="eyebrow">هون ستور</p>
+          <img class="brand-logo" src="sh.png" alt="شعار هون ستور">
+        </div>
+      </nav>
+
+      <nav class="mobile-top-nav" aria-label="خيارات الجوال">
+        <a class="mobile-top-link" href="index.html">الرئيسية</a>
+        <a class="mobile-top-link mobile-top-link-strong" href="account.html">الحساب</a>
+        <a class="mobile-top-link" href="sell.html">بيع</a>
+        <a class="mobile-top-link" href="classifieds.html">المبوبة</a>
+        <a class="mobile-top-link" href="courier.html">مندوب</a>
+      </nav>
+
+      <section class="hero-content">
+        <div class="hero-copy">
+          <p class="section-tag">الحساب الشخصي</p>
+          <h2>تسجيل بسيط وواضح لإدارة حسابك</h2>
+          <p class="hero-text">كل ما يخص حسابك في صفحة واحدة وواضحة.</p>
+          <div class="hero-actions">
+            <a class="primary-button" href="#accountHub">الدخول إلى الحساب</a>
+            <a class="secondary-button" href="sell.html">الانتقال إلى البيع</a>
+          </div>
+        </div>
+
+        <div class="hero-card">
+          <p class="card-label">ماذا ستجد هنا؟</p>
+          <div class="database-status">
+            <strong>كل ما يخص العضو في مكان واحد</strong>
+            <p>إنشاء حساب جديد، تسجيل الدخول، متابعة الإعلانات المنشورة، الطلبات المبوبة، والإعلانات المحفوظة.</p>
+          </div>
+          <div class="quick-tags">
+            <span>إنشاء حساب</span>
+            <span>تسجيل دخول</span>
+            <span>إعلاناتي</span>
+            <span>المفضلة</span>
+          </div>
+        </div>
+      </section>
+    </header>
+
+    <main>
+      <section class="members-hub" id="accountHub">
+        <div class="section-heading">
+          <p class="section-tag">الحساب</p>
+          <h2>إنشاء حساب أو تسجيل الدخول</h2>
+        </div>
+
+        <div class="members-layout">
+          <div class="auth-shell">
+            <h3 class="auth-title">الدخول إلى الحساب</h3>
+
+            <div class="auth-switch">
+              <button class="auth-tab active" type="button" data-panel="register">إنشاء حساب</button>
+              <button class="auth-tab" type="button" data-panel="login">تسجيل الدخول</button>
+            </div>
+
+            <form id="registerForm" class="auth-form auth-form-active">
+              <label>
+                الاسم الكامل
+                <input name="fullName" type="text" placeholder="مثال: أحمد اليوسف" required>
+              </label>
+              <label>
+                البريد الإلكتروني
+                <input name="email" type="email" placeholder="name@example.com" required>
+              </label>
+              <label>
+                رقم الهاتف
+                <input name="phone" type="text" placeholder="09xxxxxxxx" required>
+              </label>
+              <label>
+                المدينة
+                <input name="city" type="text" placeholder="مثال: دمشق" required>
+              </label>
+              <label>
+                كلمة المرور
+                <input name="password" type="password" placeholder="6 أحرف على الأقل" required>
+              </label>
+              <button class="primary-button submit-button" type="submit">إنشاء حساب</button>
+            </form>
+
+            <form id="loginForm" class="auth-form">
+              <label>
+                البريد الإلكتروني
+                <input name="email" type="email" placeholder="name@example.com" required>
+              </label>
+              <label>
+                كلمة المرور
+                <input name="password" type="password" placeholder="أدخل كلمة المرور" required>
+              </label>
+              <button class="primary-button submit-button" type="submit">تسجيل الدخول</button>
+            </form>
+
+            <p id="authMessage" class="form-message"></p>
+          </div>
+
+          <div id="accountSummaryShell" class="members-database account-summary-shell">
+            <div class="database-banner">
+              <div>
+                <p class="section-tag">حسابي</p>
+                <h3 id="accountSummaryTitle">إعلاناتي والمفضلة</h3>
+              </div>
+              <button id="logoutButton" class="ghost-button logout-button hidden" type="button">تسجيل الخروج</button>
+            </div>
+
+            <p id="accountSummaryNote" class="account-summary-note">سجّل الدخول لعرض حسابك هنا.</p>
+
+            <div id="memberSummaryGrid" class="account-mini-grid">
+              <article class="account-mini-card">
+                <div class="account-mini-head">
+                  <h4>إعلاناتي</h4>
+                  <span id="myListingsCount">0</span>
+                </div>
+                <div id="myListingsMini" class="mini-list"></div>
+              </article>
+
+              <article class="account-mini-card">
+                <div class="account-mini-head">
+                  <h4>طلباتي المبوبة</h4>
+                  <span id="myClassifiedsCount">0</span>
+                </div>
+                <div id="myClassifiedsMini" class="mini-list"></div>
+              </article>
+
+              <article class="account-mini-card">
+                <div class="account-mini-head">
+                  <h4>المفضلة</h4>
+                  <span id="favoriteListingsCount">0</span>
+                </div>
+                <div id="favoriteListingsMini" class="mini-list"></div>
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer" id="contact">
+      <div class="footer-hero">
+        <div>
+          <p class="section-tag">دعم الحساب</p>
+          <h2>إذا واجهتك مشكلة في الدخول أو الحساب فنحن هنا للمساعدة</h2>
+        </div>
+        <p>اختر الصفحة المناسبة من الأعلى، وستبقى هذه الصفحة خاصة بعضويتك فقط.</p>
+      </div>
+
+      <div class="footer-grid">
+        <article class="footer-card">
+          <h3>الدعم عبر واتساب</h3>
+          <p>للمساعدة في الحسابات أو تسجيل الدخول أو التحقق من الإعلانات.</p>
+          <a href="https://wa.me/963933001122" target="_blank" rel="noopener noreferrer">تواصل عبر واتساب</a>
+        </article>
+
+        <article class="footer-card">
+          <h3>انتقل بسرعة</h3>
+          <span><a href="sell.html">إضافة إعلان بيع</a></span>
+          <span><a href="classifieds.html">الإعلانات المبوبة</a></span>
+          <span><a href="courier.html">برنامج المندوبين</a></span>
+        </article>
+      </div>
+    </footer>
+  </div>
+
+  <nav class="mobile-bottom-nav" aria-label="التنقل السفلي">
+    <a class="mobile-nav-link" href="index.html">
+      <strong>الرئيسية</strong>
+      <span>البداية</span>
+    </a>
+    <a class="mobile-nav-link mobile-nav-link-sell" href="sell.html">
+      <strong>بيع</strong>
+      <span>إعلان</span>
+    </a>
+    <a class="mobile-nav-link" href="classifieds.html">
+      <strong>مبوبة</strong>
+      <span>طلبات</span>
+    </a>
+    <a class="mobile-nav-link" href="courier.html">
+      <strong>مندوب</strong>
+      <span>توصيل</span>
+    </a>
+    <a class="mobile-nav-link" href="account.html#login">
+      <strong>حسابي</strong>
+      <span>دخول</span>
+    </a>
+  </nav>
+
+  <script src="script.js"></script>
+</body>
+</html>

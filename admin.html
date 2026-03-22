@@ -18,6 +18,7 @@
           <a class="nav-link" href="index.html">العودة إلى المنصة</a>
           <a class="nav-link" href="#adminCouriers">طلبات المندوبين</a>
           <a class="nav-link" href="#adminListingsSection">الإعلانات</a>
+          <a class="nav-link" href="#adminClassifiedsSection">الإعلانات المبوبة</a>
           <a class="nav-link" href="#adminMembersSection">المستخدمون</a>
           <a class="nav-link" href="#adminManagersSection">المديرون</a>
         </div>
@@ -113,6 +114,14 @@
                 <span>إعلانات بإطار ذهبي</span>
               </article>
               <article class="admin-stat-card">
+                <strong id="adminPendingClassifiedsCount">0</strong>
+                <span>طلبات مبوبة معلقة</span>
+              </article>
+              <article class="admin-stat-card">
+                <strong id="adminOpenClassifiedsCount">0</strong>
+                <span>طلبات مفتوحة</span>
+              </article>
+              <article class="admin-stat-card">
                 <strong id="adminBannedMembersCount">0</strong>
                 <span>مستخدمون محظورون</span>
               </article>
@@ -138,6 +147,15 @@
                 </div>
                 <p id="adminListingsNote" class="account-summary-note">يمكن للمديرين المخولين تمييز الإعلانات بإطار ذهبي أو حذف الصورة أو إزالة الإعلان.</p>
                 <div id="adminListingsList" class="admin-listing-list"></div>
+              </section>
+
+              <section class="admin-block" id="adminClassifiedsSection">
+                <div class="section-heading section-heading-compact">
+                  <p class="section-tag">الإعلانات المبوبة</p>
+                  <h3>اعتماد الطلبات المبوبة ومتابعة حالتها</h3>
+                </div>
+                <p id="adminClassifiedsNote" class="account-summary-note">يمكنك من هذا القسم مراجعة الإعلانات المبوبة واعتمادها أو إغلاقها.</p>
+                <div id="adminClassifiedsList" class="admin-classified-list"></div>
               </section>
 
               <section class="admin-block" id="adminMembersSection">
