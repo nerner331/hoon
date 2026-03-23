@@ -142,6 +142,7 @@ const categoryTabShell = document.querySelector("#categoryTabShell");
 const activeCategoryLabel = document.querySelector("#activeCategoryLabel");
 const quickCityButtons = document.querySelectorAll(".tag-btn[data-city]");
 const classifiedTypeButtons = document.querySelectorAll(".classified-type-pill");
+const mobileNavLinks = document.querySelectorAll(".mobile-bottom-nav .mobile-nav-link");
 
 bootstrap();
 
@@ -149,6 +150,7 @@ async function bootstrap() {
   bindEvents();
   initializeListingCameraControls();
   renderListingImagePreviews();
+  syncMobileNavigation();
   switchAuthPanel(getInitialAuthPanel());
   await loadAppData();
 }
@@ -416,6 +418,35 @@ function scrollToSelectorOrNavigate(selector, fallbackUrl = "") {
 
 function redirectToMemberLogin() {
   navigateTo("account", "login");
+}
+
+function syncMobileNavigation() {
+  if (!mobileNavLinks.length) {
+    return;
+  }
+
+  const currentPageUrl = normalizePageHref(getPageUrl(currentPage));
+  if (!currentPageUrl) {
+    return;
+  }
+
+  mobileNavLinks.forEach((link) => {
+    const targetPageUrl = normalizePageHref(link.getAttribute("href"));
+    const isActive = targetPageUrl === currentPageUrl;
+
+    link.classList.toggle("active", isActive);
+
+    if (isActive) {
+      link.setAttribute("aria-current", "page");
+      return;
+    }
+
+    link.removeAttribute("aria-current");
+  });
+}
+
+function normalizePageHref(value) {
+  return String(value || "").split("#")[0].trim();
 }
 
 function initializeListingCameraControls() {
