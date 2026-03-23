@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary_gold">#D4AF37</color>
+    <color name="dark_gold">#996515</color>
+    <color name="light_gold">#F9F295</color>
+    <color name="bg_dark">#1A1A1A</color>
+    <color name="surface_dark">#262626</color>
+    <color name="gold_border">#66D4AF37</color>
+    <color name="text_on_gold">#2C2C2C</color>
+    <color name="body_text">#ECE3C1</color>
+    <color name="status_bar">#111111</color>
+</resources>

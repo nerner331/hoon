@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">هون ستور</string>
+    <string name="app_url">https://hoon-store.onrender.com/</string>
+    <string name="retry_button">إعادة المحاولة</string>
+    <string name="open_in_browser">فتح في المتصفح</string>
+    <string name="web_error_title">تعذر تحميل هون ستور</string>
+    <string name="web_error_message">تحقق من اتصال الإنترنت أو من رابط النشر ثم أعد المحاولة.</string>
+    <string name="file_chooser_title">اختر صورة أو التقط واحدة جديدة</string>
+    <string name="file_picker_unavailable">تعذر فتح منتقي الملفات على هذا الجهاز.</string>
+    <string name="external_open_failed">تعذر فتح الرابط الخارجي.</string>
+    <string name="camera_permission_required">يجب منح إذن الكاميرا لاستخدام التصوير داخل التطبيق.</string>
+</resources>

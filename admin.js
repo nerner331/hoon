@@ -200,9 +200,9 @@ function renderCouriers() {
       ${renderCourierMedia(courier)}
 
       <div class="admin-courier-actions">
-        ${renderActionButton("pending", "قيد المراجعة", courier.status === "pending", state.admin.canManageCouriers, { courierId: courier.id, type: "courier-status" })}
-        ${renderActionButton("approved", "جاهز للعمل", courier.status === "approved", state.admin.canManageCouriers, { courierId: courier.id, type: "courier-status" })}
-        ${renderActionButton("paused", "موقوف مؤقتًا", courier.status === "paused", state.admin.canManageCouriers, { courierId: courier.id, type: "courier-status" })}
+        ${renderActionButton("pending", "قيد المراجعة", courier.status === "pending", state.admin.canManageCouriers, { courierId: courier.id, type: "courier-status", status: "pending" })}
+        ${renderActionButton("approved", "جاهز للعمل", courier.status === "approved", state.admin.canManageCouriers, { courierId: courier.id, type: "courier-status", status: "approved" })}
+        ${renderActionButton("paused", "موقوف مؤقتًا", courier.status === "paused", state.admin.canManageCouriers, { courierId: courier.id, type: "courier-status", status: "paused" })}
       </div>
     </article>
   `).join("");

@@ -7,11 +7,12 @@ loadEnvFile(path.join(__dirname, ".env"));
 
 const { PORT } = require("./lib/config");
 const { initSchema } = require("./lib/database");
-const { handleApiRoutes } = require("./lib/routes");
+const { handleApiRoutes, runExpiredListingCleanup } = require("./lib/routes");
 const { serveStatic } = require("./lib/static");
 
 // Initialize Database Schema
 initSchema();
+runExpiredListingCleanup(true);
 
 // Rate limiting map: IP -> { count, resetTime }
 const rateLimitMap = new Map();
@@ -96,6 +97,11 @@ const server = http.createServer(async (req, res) => {
 server.listen(PORT, () => {
   console.log(`Hoon Store is running on http://localhost:${PORT}`);
 });
+
+// Cleanup expired listings every hour
+setInterval(() => {
+  runExpiredListingCleanup(true);
+}, 60 * 60 * 1000);
 
 // Cleanup rate limit map every 5 minutes
 setInterval(() => {

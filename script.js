@@ -459,12 +459,12 @@ function initializeListingCameraControls() {
   openListingCameraButton.disabled = !supported;
 
   if (supported) {
-    imagePolicyNote.textContent = "يمكنك التقاط حتى 5 صور مباشرة وواضحة للمنتج. استخدم إضاءة جيدة وثبّت الهاتف قليلًا لتحصل على جودة أفضل.";
+    imagePolicyNote.textContent = "يمكنك التقاط حتى 5 صور مباشرة وواضحة للمنتج. استخدم إضاءة جيدة وثبّت الهاتف قليلًا لتحصل على جودة أفضل. الإعلان وصوره يُحذفان تلقائيًا بعد 30 يومًا.";
     return;
   }
 
   openListingCameraButton.textContent = "الكاميرا غير متاحة";
-  imagePolicyNote.textContent = "هذا المتصفح لا يدعم التقاط صورة مباشرة. استخدم هاتفًا أو متصفحًا يدعم الكاميرا لإرسال الإعلان.";
+  imagePolicyNote.textContent = "هذا المتصفح لا يدعم التقاط صورة مباشرة. استخدم هاتفًا أو متصفحًا يدعم الكاميرا لإرسال الإعلان. الإعلان وصوره يُحذفان تلقائيًا بعد 30 يومًا.";
 }
 
 function canUseListingCameraCapture() {

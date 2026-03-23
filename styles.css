@@ -3031,6 +3031,15 @@ body[data-page="home"] .categories .section-tag {
   line-height: 1.55;
 }
 
+.listing-retention-note {
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(212, 175, 55, 0.18);
+  background: rgba(212, 175, 55, 0.08);
+  color: #f1e0a2;
+  font-weight: 700;
+}
+
 .site-footer {
   margin-top: 18px;
   padding: 18px;
