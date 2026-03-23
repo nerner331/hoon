@@ -4293,6 +4293,45 @@ body[data-page="home"] .topbar {
   box-shadow: inset 0 -1px 0 rgba(249, 242, 149, 0.12), 0 18px 32px rgba(0, 0, 0, 0.24);
 }
 
+.brand-logo-shell {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at top, rgba(249, 242, 149, 0.28), transparent 48%),
+    linear-gradient(155deg, rgba(44, 35, 18, 0.96), rgba(12, 12, 12, 0.92));
+  border: 1px solid rgba(249, 242, 149, 0.24);
+  box-shadow:
+    0 22px 38px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 0 1px rgba(212, 175, 55, 0.12);
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.brand-logo-shell::before {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 42%);
+  pointer-events: none;
+}
+
+.brand-logo-shell::after {
+  content: "";
+  position: absolute;
+  inset: auto 10% 8% 10%;
+  height: 26%;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.22), transparent 72%);
+  filter: blur(14px);
+  pointer-events: none;
+}
+
 .brand-logo {
   display: block;
   width: clamp(72px, 7vw, 84px);
@@ -4303,7 +4342,11 @@ body[data-page="home"] .topbar {
   object-fit: contain;
   object-position: center;
   border-radius: 16px;
-  box-shadow: 0 12px 26px rgba(153, 101, 21, 0.18);
+  box-shadow:
+    0 10px 24px rgba(153, 101, 21, 0.16),
+    0 0 0 1px rgba(255, 248, 219, 0.06);
+  position: relative;
+  z-index: 1;
 }
 
 body[data-page="account"] .brand-stack .brand-logo,
@@ -4314,12 +4357,32 @@ body[data-page="courier"] .brand-stack .brand-logo {
   max-height: 108px;
 }
 
+body[data-page="account"] .brand-stack .brand-logo-shell,
+body[data-page="sell"] .brand-stack .brand-logo-shell,
+body[data-page="classifieds"] .brand-stack .brand-logo-shell,
+body[data-page="courier"] .brand-stack .brand-logo-shell {
+  padding: 9px;
+}
+
 body[data-page="home"] .brand-stack .brand-logo {
   width: clamp(96px, 11vw, 122px);
   max-height: 132px;
   filter: brightness(1.06) contrast(1.08) saturate(1.04)
     drop-shadow(0 14px 26px rgba(0, 0, 0, 0.28))
     drop-shadow(0 0 16px rgba(212, 175, 55, 0.12));
+}
+
+body[data-page="home"] .brand-stack .brand-logo-shell {
+  padding: 10px 12px;
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at top, rgba(249, 242, 149, 0.32), transparent 50%),
+    linear-gradient(155deg, rgba(52, 41, 18, 0.98), rgba(12, 12, 12, 0.94));
+  box-shadow:
+    0 24px 42px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 0 0 1px rgba(212, 175, 55, 0.16),
+    0 0 24px rgba(212, 175, 55, 0.12);
 }
 
 .nav-link,
@@ -4509,6 +4572,11 @@ body[data-page="home"] .home-whatsapp-link:hover {
 }
 
 @media (max-width: 900px) {
+  .brand-logo-shell {
+    padding: 7px;
+    border-radius: 20px;
+  }
+
   .brand-logo {
     width: 66px;
     max-height: 82px;
@@ -4522,8 +4590,20 @@ body[data-page="home"] .home-whatsapp-link:hover {
     max-height: 92px;
   }
 
+  body[data-page="account"] .brand-stack .brand-logo-shell,
+  body[data-page="sell"] .brand-stack .brand-logo-shell,
+  body[data-page="classifieds"] .brand-stack .brand-logo-shell,
+  body[data-page="courier"] .brand-stack .brand-logo-shell {
+    padding: 8px;
+  }
+
   body[data-page="home"] .brand-stack .brand-logo {
     width: clamp(84px, 24vw, 104px);
     max-height: 114px;
+  }
+
+  body[data-page="home"] .brand-stack .brand-logo-shell {
+    padding: 9px 10px;
+    border-radius: 24px;
   }
 }
